@@ -1,0 +1,12 @@
+[
+  { "source": "app/assistants/stage-assistant.js" },
+  { "source": "app/models/metrix.js" },
+  { "source": "app/models/asyncWrappers.js" },
+  { "source": "app/models/dreams.js" },
+  { "scenes": "help", "source": "app/assistants/help-assistant.js" },
+  { "scenes": "prefs", "source": "app/assistants/prefs-assistant.js" },
+  { "scenes": "password", "source": "app/assistants/password-assistant.js" },
+  { "scenes": "dreams", "source": "app/assistants/dreams-assistant.js" },
+  { "scenes": "dream", "source": "app/assistants/dream-assistant.js" },
+  { "scenes": "edit-dream", "source": "app/assistants/edit-dream-assistant.js" }
+]

@@ -1,0 +1,186 @@
+function PrefsAssistant () { }
+
+PrefsAssistant.prototype = {
+  models: { 
+    themeSelector: {
+      value: DreamsDB.prefs.theme,
+      disabled: false,
+      choices: [
+        { label: "Light", value: "light" },
+        { label: "Dark", value: "dark" }
+      ]
+    },
+
+    passwordProtect: {
+      value: DreamsDB.prefs.passwordProtect,
+      disabled: false
+    },
+
+    passwordField: {
+      value: DreamsDB.prefs.password, 
+      autoFocus: false, 
+      disabled: !DreamsDB.prefs.passwordProtect 
+    },
+
+    alwaysOn: {
+      value: DreamsDB.prefs.alwaysOn,
+      disabled: false
+    },
+
+    allowRotate: {
+      value: DreamsDB.prefs.allowRotate,
+      disabled: false
+    },
+
+    brightness: {
+      value: DreamsDB.prefs.brightness,
+      disabled: false
+    },
+
+    backgroundPicker: {
+      label: "Change Background",
+      disabled: false
+    }
+  },
+  handlers: { },
+
+  setup: function () {
+
+    // ======================================  
+    // Widgets
+    // ======================================  
+
+    // theme
+    this.controller.setupWidget('themeSelector', {
+      labelPlacement: Mojo.Widget.labelPlacementLeft,
+      label: "Theme"
+    }, this.models.themeSelector);
+
+    // password
+    this.controller.setupWidget('passwordProtect', {
+      trueLabel: 'Yes',
+      falseLabel: 'No'
+    }, this.models.passwordProtect);
+  
+    this.controller.setupWidget("passwordLock", { 
+      hintText: "Type Password" 
+    }, this.models.passwordField);
+
+    // always on
+    this.controller.setupWidget('alwaysOn', {
+      trueLabel: 'Yes',
+      falseLabel: 'No'
+    }, this.models.alwaysOn);
+
+    // rotate
+    this.controller.setupWidget('allowRotateToggle', {
+      trueLabel: 'Yes',
+      falseLabel: 'No'
+    }, this.models.allowRotate);
+
+    // brightness
+    this.controller.setupWidget("brightnessSlider", {
+      minValue: 0,
+      maxValue: 100
+    }, this.models.brightness);
+
+    // background picker
+    this.controller.setupWidget("backgroundPicker", {
+    }, this.models.backgroundPicker);
+
+    // handlers
+    this.handlers = {
+      deactivate: this.deactivateWindow.bind(this),
+      showPasswordField: this.showPasswordField.bind(this),
+      passwordLock: this.passwordLockUpdate.bind(this),
+      allowRotate: this.allowRotateUpdate.bind(this),
+      theme: this.themeUpdate.bind(this),
+      alwaysOn: this.alwaysOnUpdate.bind(this),
+      brightness: this.brightnessUpdate.bind(this),
+      backgroundPicker: this.backgroundPickerHandler.bind(this)
+    }
+  },
+
+  activate: function (event) {
+    // listeners
+    Mojo.Event.listen(this.controller.get("passwordProtect"), Mojo.Event.propertyChange, this.handlers.showPasswordField);
+    Mojo.Event.listen(this.controller.get("passwordLock"), Mojo.Event.propertyChange, this.handlers.passwordLock);
+    Mojo.Event.listen(this.controller.get("allowRotateToggle"), Mojo.Event.propertyChange, this.handlers.allowRotate);
+    Mojo.Event.listen(this.controller.get("themeSelector"), Mojo.Event.propertyChange, this.handlers.theme);
+    Mojo.Event.listen(this.controller.get("alwaysOn"), Mojo.Event.propertyChange, this.handlers.alwaysOn);
+    Mojo.Event.listen(this.controller.get("brightnessSlider"), Mojo.Event.propertyChange, this.handlers.brightness);
+    Mojo.Event.listen(this.controller.get("backgroundPicker"), Mojo.Event.tap, this.handlers.backgroundPicker);
+    Mojo.Event.listen(this.controller.stageController.document, Mojo.Event.stageDeactivate, this.handlers.deactivate);
+  },
+
+  deactivate: function (event) {
+    Mojo.Event.stopListening(this.controller.get("passwordProtect"), Mojo.Event.propertyChange, this.handlers.showPasswordField);
+    Mojo.Event.stopListening(this.controller.get("passwordLock"), Mojo.Event.propertyChange, this.handlers.passwordLock);
+    Mojo.Event.stopListening(this.controller.get("allowRotateToggle"), Mojo.Event.propertyChange, this.handlers.allowRotate);
+    Mojo.Event.stopListening(this.controller.get("themeSelector"), Mojo.Event.propertyChange, this.handlers.theme);
+    Mojo.Event.stopListening(this.controller.get("alwaysOn"), Mojo.Event.propertyChange, this.handlers.alwaysOn);
+    Mojo.Event.stopListening(this.controller.get("brightnessSlider"), Mojo.Event.propertyChange, this.handlers.brightness);
+    Mojo.Event.stopListening(this.controller.get("backgroundPicker"), Mojo.Event.tap, this.handlers.backgroundPicker);
+    Mojo.Event.stopListening(this.controller.stageController.document, Mojo.Event.stageDeactivate, this.handlers.deactivate);
+  },
+
+  deactivateWindow: function (event) {
+    DreamsDB.savePrefs();
+  },
+
+  cleanup: function (event) {
+    DreamsDB.savePrefs();
+  },
+
+  showPasswordField: function (event) {
+    this.models.passwordField.disabled = !event.value;
+    this.controller.modelChanged(this.models.passwordField);
+    DreamsDB.prefs.passwordProtect = event.value;
+  },
+
+  passwordLockUpdate: function (event) {
+    DreamsDB.prefs.password = event.value;
+  },
+
+  themeUpdate: function (event) {
+    var className = 'palm-' + event.value;
+    this.controller.get('myBodyIsYourBody').className = className;
+    DreamsDB.prefs.theme = event.value;
+  },
+
+  allowRotateUpdate: function (event) {
+    DreamsDB.prefs.allowRotate = event.value;
+
+    if (event.value) {
+      this.controller.stageController.setWindowOrientation("free");
+    } else {
+      this.controller.stageController.setWindowOrientation("up");
+    }
+  },
+
+  backgroundPickerHandler: function () {
+    // background picker
+    Mojo.FilePicker.pickFile({
+      onSelect: (function (event) {
+        var wallpaperImage = "file://" + event.fullPath;
+        this.controller.get('myBodyIsYourBody').style.backgroundImage = "url('" + wallpaperImage + "')";
+        DreamsDB.prefs.wallpaper = event.fullPath;
+      }).bind(this),
+      kind: "image",
+      actionName: "Select Background",
+      extensions: [ 'png', 'jpg', 'jpeg' ]
+    }, this.controller.stageController);
+  },
+
+  brightnessUpdate: function (event) {
+    this.controller.get('iWontTellAnybody').style.opacity = ((100 - event.value) / 100);
+    DreamsDB.prefs.brightness = event.value;
+  },
+
+  alwaysOnUpdate: function (event) {
+    this.controller.stageController.setWindowProperties({
+      blockScreenTimeout: event.value
+    });
+    DreamsDB.prefs.alwaysOn = event.value;
+  }
+};

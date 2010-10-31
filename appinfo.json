@@ -1,0 +1,14 @@
+{
+	"id": "com.goatslacker.dreamcatcher",
+	"version": "1.2.0",
+	"vendor": "goatslacker",
+  "vendorurl": "http://www.goatslacker.com",
+	"type": "web",
+	"main": "index.html",
+	"title": "Dreamcatcher",
+  "noDeprecatedStyles": "true",
+  "copyright": "© Copyright 2010 goatslacker",
+  "splashBackground": "images/splash.png",
+	"icon": "icon.png",
+  "keywords": [ "dream", "journal", "log" ]
+}
