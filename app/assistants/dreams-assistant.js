@@ -221,7 +221,7 @@ DreamsAssistant.prototype = {
     }
   },
 
-  handleCommand: function(event) {
+  handleCommand: function (event) {
     if (event.type === Mojo.Event.command) {
       switch (event.command) {
       case "dream":
