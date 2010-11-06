@@ -24,7 +24,7 @@ StageAssistant.prototype.handleCommand = function (event) {
     var scenes = Mojo.Controller.stageController.getScenes(), topScene = scenes[scenes.length - 1], swap = false;
 
     switch (event.command) {
-    case 'about':
+    case 'help':
     case 'prefs':
       if (topScene.sceneName !== event.command) {
         Mojo.Controller.stageController.pushScene({ name: event.command });

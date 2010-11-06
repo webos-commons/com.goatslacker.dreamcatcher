@@ -5,6 +5,7 @@ var DreamsDB = {
   database: false,
   hasMetrix: false,
   locked: true,
+  $lib: { },
 
 /* Prefs */
   prefs: {
@@ -90,8 +91,16 @@ var DreamsDB = {
 
     // vars
     var dateObj = new Date(dream.timestamp),
-      date_format = (dateObj.getMonth() + 1) + "" + dateObj.getDate() + "" + dateObj.getFullYear(),
+      date_format,
+      month = (dateObj.getMonth() + 1),
+      day = dateObj.getDate(),
+      year = dateObj.getFullYear(),
       i = 0;
+
+    // fix 9 into 09 for MM/DD/YYYY format
+    month = (month > 9) ? month : "0" + month;
+    day = (day > 9) ? day : "0" + day;
+    date_format = month.toString() + day.toString() + year.toString();
 
     // edit
     if (dream.id) {
