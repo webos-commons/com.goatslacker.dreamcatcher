@@ -138,11 +138,13 @@ DreamsAssistant.prototype = {
   },
 
   updateDreams: function (dreams) {
-    this.controller.get('spinnerScrim').hide();
-    this.models.spinner.spinning = false;
-    this.controller.modelChanged(this.models.spinner);
+    if (this.controller) {
+      this.controller.get('spinnerScrim').hide();
+      this.models.spinner.spinning = false;
+      this.controller.modelChanged(this.models.spinner);
 
-    this.controller.get('dreams').mojo.noticeUpdatedItems(0, dreams);
+      this.controller.get('dreams').mojo.noticeUpdatedItems(0, dreams);
+    }
   },
 
   sortDreams: function (event) {

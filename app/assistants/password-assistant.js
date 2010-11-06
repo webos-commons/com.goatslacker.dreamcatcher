@@ -17,6 +17,12 @@ PasswordAssistant.prototype = {
   handlers: { },
 
   setup: function () {
+    // Menu
+    this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, {
+      items: [
+        { label: "Forgot Password", command: "support" }
+      ]
+    });
 
     // widgets
     this.controller.setupWidget("passwordField", { 
@@ -48,6 +54,39 @@ PasswordAssistant.prototype = {
     } else {
       this.controller.get('errorWrapper').show();
       this.controller.get('error_message').innerHTML = "Incorrect Password, Try Again";
+      this.models.passwordField.value = "";
+      this.controller.modelChanged(this.models.passwordField);
+      // this.controller.get('passwordField').mojo.focus();
+    }
+  },
+
+  resetPassword: function () {
+    DreamsDB.prefs.password = "dr34m";
+  },
+
+  handleCommand: function (event) {
+    if (event.type === Mojo.Event.command) {
+      switch (event.command) {
+      case "support":
+        this.resetPassword();
+        this.controller.serviceRequest("palm://com.palm.applicationManager", {
+          method: "open",
+          parameters: { 
+            id: "com.palm.app.email",
+            params: {
+              recipients: [{
+                contactDisplay: 'Josh Perez',
+                type: 'email',
+                role: 1,
+                value: 'josh@goatslacker.com'
+              }],
+              summary: "Dreamcatcher: Help, I forgot my password"
+            }
+          }
+        });
+        break;
+      }
     }
   }
+
 };

@@ -133,6 +133,7 @@ PrefsAssistant.prototype = {
   },
 
   showPasswordField: function (event) {
+    this.models.passwordField.value = "";
     this.models.passwordField.disabled = !event.value;
     this.controller.modelChanged(this.models.passwordField);
     DreamsDB.prefs.passwordProtect = event.value;
