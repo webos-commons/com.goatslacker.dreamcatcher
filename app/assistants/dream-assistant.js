@@ -5,12 +5,14 @@ function DreamAssistant (dream) {
 DreamAssistant.prototype = {
   models: {
     cmdMenu: {
-      items: [{
-        items: [
-          { label: "Edit", command: "edit" },
-          { icon: "send", command: "send" }
-        ]
-      }]
+      items: [
+        {},{}, {
+          items: [
+            { label: "Edit", command: "edit" },
+            { icon: "send", command: "send" }
+          ]
+        }
+      ]
     }
   },
 

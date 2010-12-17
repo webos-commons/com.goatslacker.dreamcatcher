@@ -5,7 +5,12 @@ DreamsAssistant.prototype = {
   models: {
     cmdMenu: {
       items: [
-        { icon: "new", command: "dream" }
+        {},{}, {
+          items: [
+            { icon: "new", command: "dream" },
+            { icon: "sync", command: "send" }
+          ]
+        }
       ]
     },
     dreams: {
@@ -228,13 +233,19 @@ DreamsAssistant.prototype = {
         this.addDream();
         break;
       case "send":
+        var text = [], i;
+
+        for (i = 0; i < DreamsDB.dreams.length; i = i + 1) {
+          text.push(DreamsDB.dreams[i].date_format + "<br />----<br />" + DreamsDB.dreams[i].dream);
+        }
+
         this.controller.serviceRequest("palm://com.palm.applicationManager", {
           method: "open",
           parameters: { 
             id: "com.palm.app.email",
             params: {
               summary: "Dreamcatcher Backup",
-              text: this.dreams 
+              text: text.join("<br /><br />") 
             }
           }
         });

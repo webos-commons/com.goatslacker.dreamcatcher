@@ -30,6 +30,17 @@ body {
   height: 452px;
 }
 
+.dream-show {
+  padding: 10px 20px;
+  width: auto;
+  background-color: #d4d4d4;
+  opacity: 0.6;
+}
+
+.palm-dark .dream-show {
+  background-color: #4d4d4d;
+}
+
 #appVersion {
   text-align: center;
   width: 100%;
@@ -53,22 +64,22 @@ body {
 .contact.selected a { color: white; }
 
 .opaque {
-  background-color: #D4D4D4;
+  background-color: #d4d4d4;
   -webkit-border-radius: 15px;
   opacity: 0.6;
 }
 
 .palm-dark .opaque {
-  background-color: #4D4D4D;
+  background-color: #4d4d4d;
 }
 
 .not-opaque {
-  background-color: #D4D4D4;
+  background-color: #d4d4d4;
   -webkit-border-radius: 15px;
 }
 
 .palm-dark .not-opaque {
-  background-color: #4D4D4D;
+  background-color: #4d4d4d;
 }
 
 .palm-text-wrapper { padding: 0; }
