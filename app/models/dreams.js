@@ -15,7 +15,8 @@ var DreamsDB = {
     allowRotate: false,
     passwordProtect: false,
     password: "",
-    alwaysOn: true
+    alwaysOn: true,
+    noDepot: false
   },
 
 /* App */
@@ -54,17 +55,42 @@ var DreamsDB = {
     }
   },
 
-  get: function (callback) {
-    if (this.dreams.length === 0) {
-      this.database.get('dreams', (function (data) {
-        if (data) {
-          this.dreams = data;
-        }
-        callback(this.dreams);
-      }).bind(this));
-    } else {
-      callback(this.dreams);
+  deprecate: function () {
+    // add
+    if (this.prefs.noDepot === false) {
+
+      if (this.dreams.length === 0) {
+        this.database.get('dreams', (function (data) {
+          if (data) {
+            this.dreams = data;
+          }
+          this._deprecate(this.dreams);
+        }).bind(this));
+      } else {
+        this._deprecate(this.dreams);
+      }
+
     }
+  },
+
+  _deprecate: function (dreams) {
+    var i = 0
+      , dream;
+
+    for (i = 0; i < dreams.length; i = i + 1) {
+      dream = new Dream();
+      dream.title = dreams[i].title;
+      dream.summary = dreams[i].dream;
+      dream.date_format = dreams[i].date_format;
+      dream.created_at = dreams[i].timestamp;
+      dream.save();
+    }
+
+    // make sure there are no errors and then dump the database
+    this.database.add('dreams', {});
+
+    // set in prefs that we're not using depot anymore
+    this.prefs.noDepot = true;
   },
 
   loadPrefs: function (onSuccess, onFailure) {
@@ -77,70 +103,6 @@ var DreamsDB = {
         onSuccess(this.prefs);
       }
     }).bind(this), onFailure);
-  },
-
-  post: function (dream) {
-    if (!this.init) {
-      this.initialize();
-    }
-
-    // defaults
-    dream.title = dream.title || "";
-    dream.timestamp = dream.timestamp || Date.now();
-    dream.tags = dream.tags || [];
-
-    // vars
-    var dateObj = new Date(dream.timestamp),
-      date_format,
-      month = (dateObj.getMonth() + 1),
-      day = dateObj.getDate(),
-      year = dateObj.getFullYear(),
-      i = 0;
-
-    // fix 9 into 09 for MM/DD/YYYY format
-    month = (month > 9) ? month : "0" + month;
-    day = (day > 9) ? day : "0" + day;
-    date_format = month.toString() + day.toString() + year.toString();
-
-    // edit
-    if (dream.id) {
-
-      // loop through all the dreams
-      for (i = 0; i < this.dreams.length; i = i + 1) {
-
-        // if we found the right dream
-        if (this.dreams[i].id === dream.id) {
-          
-          // correct the date format
-          dream.date_format = date_format;
-
-          // push the dream into the dreams array
-          this.dreams[i] = dream;
-          break;
-        }
-
-      }
-    // new
-    } else {
-      // hash the dream into an ID
-      dream.id = Date.now();
-
-      // store the date format
-      dream.date_format = date_format;
-
-      // push the dream into the dreams array
-      this.dreams.push(dream);
-    }
-
-    // save obj
-    this.save();
-
-    // return the dream object
-    return dream;
-  },
-
-  save: function () {
-    this.database.add("dreams", this.dreams);
   },
 
   savePrefs: function () {

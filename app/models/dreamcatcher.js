@@ -1,4 +1,4 @@
-Snake.init({"database":{"name":"dreamcatcher","version":"0.1","displayName":"Dreamcatcher Database","size":100000000},"schema":{"dream":{"jsName":"Dream","columns":{"title":{"type":"text"},"summary":{"type":"text"},"dreamDate":{"type":"text"}}},"dream_search":{"jsName":"DreamSearch","columns":{"dream_id":{"type":"integer","foreign":"dream.id"},"word":{"type":"text"},"stem":{"type":"text"},"weight":{"type":"integer"}}},"dream_tag":{"jsName":"DreamTag","columns":{"dream_id":{"type":"integer","foreign":"dream.id"},"tag":{"type":"text"},"normalized":{"type":"text"}}}},"sql":["CREATE TABLE IF NOT EXISTS 'dream' (id INTEGER PRIMARY KEY, title TEXT, summary TEXT, dreamDate TEXT, created_at INTEGER)","CREATE TABLE IF NOT EXISTS 'dream_search' (id INTEGER PRIMARY KEY, dream_id INTEGER, word TEXT, stem TEXT, weight INTEGER, created_at INTEGER)","CREATE TABLE IF NOT EXISTS 'dream_tag' (id INTEGER PRIMARY KEY, dream_id INTEGER, tag TEXT, normalized TEXT, created_at INTEGER)"]});
+Snake.init({"database":{"name":"ext:dreamcatcher","version":"0.1","displayName":"Dreamcatcher Database","size":100000000},"schema":{"dream":{"jsName":"Dream","columns":{"title":{"type":"text"},"summary":{"type":"text"},"dreamDate":{"type":"text"}}},"dream_search":{"jsName":"DreamSearch","columns":{"dream_id":{"type":"integer","foreign":"dream.id"},"word":{"type":"text"},"stem":{"type":"text"},"weight":{"type":"integer"}}},"dream_tag":{"jsName":"DreamTag","columns":{"dream_id":{"type":"integer","foreign":"dream.id"},"tag":{"type":"text"},"normalized":{"type":"text"}}}},"sql":["CREATE TABLE IF NOT EXISTS 'dream' (id INTEGER PRIMARY KEY, title TEXT, summary TEXT, dreamDate TEXT, created_at INTEGER)","CREATE TABLE IF NOT EXISTS 'dream_search' (id INTEGER PRIMARY KEY, dream_id INTEGER, word TEXT, stem TEXT, weight INTEGER, created_at INTEGER)","CREATE TABLE IF NOT EXISTS 'dream_tag' (id INTEGER PRIMARY KEY, dream_id INTEGER, tag TEXT, normalized TEXT, created_at INTEGER)"]});
 
 var DreamPeer = new Snake.BasePeer({
   tableName: 'dream',
@@ -7,7 +7,7 @@ var DreamPeer = new Snake.BasePeer({
   CREATED_AT: 'dream.created_at',
   TITLE: 'dream.title',
   SUMMARY: 'dream.summary',
-  DREAMDATE: 'dream.dreamDate',
+  DREAMDATE: 'dream.dreamDate', // TODO date_format or dream_date instead of dreamDate
   
   fields: {
     id: { type: 'INTEGER' }, created_at: { TYPE: 'INTEGER' },

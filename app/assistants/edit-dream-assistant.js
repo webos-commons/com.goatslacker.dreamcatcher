@@ -1,5 +1,5 @@
 function EditDreamAssistant (dream) {
-  this.dream = dream || {};
+  this.dream = dream || new Dream();
 }
 
 EditDreamAssistant.prototype = {
@@ -19,10 +19,11 @@ EditDreamAssistant.prototype = {
   handlers: { },
 
   setup: function () {
+    // TODO fix the model variables and database schema and add the tags!!!!!!
     // defaults
     this.dream.dream = this.dream.dream || "";
     this.dream.title = this.dream.title || "";
-    this.dream.tags = this.dream.tags || [];
+    //this.dream.tags = this.dream.tags || [];
     this.dream.timestamp = this.dream.timestamp || Date.now();
     this.models.datePicker.date = new Date(this.dream.timestamp);
 
@@ -76,31 +77,36 @@ EditDreamAssistant.prototype = {
 
   save: function () {
     if (this.controller && this.controller.get('richDream').innerHTML != "") {
+      this.dream.summary = this.controller.get('richDream').innerHTML;
+      this.dream.title = this.controller.get('txtTitle').mojo.getValue();
+      this.dream.created_at = this.models.datePicker.date.getTime();
 
-      // store the dream in an object
-      var dreamObj = {
-        id: this.dream.id,
-        dream: this.controller.get('richDream').innerHTML, 
-        timestamp: this.models.datePicker.date.getTime(), 
-        title: this.controller.get('txtTitle').mojo.getValue(), 
-        tags: this.controller.get('txtTags').mojo.getValue().split(" ")
-      };
+      //tags: this.controller.get('txtTags').mojo.getValue().split(" ")
 
-      // compare if the dream has changed since last save
-      if (dreamObj.dream !== this.dream.dream ||
-        dreamObj.timestamp !== this.dream.timestamp ||
-        dreamObj.title !== this.dream.title ||
-        dreamObj.tags.join(" ") !== this.dream.tags.join(" ")
-      ) {
+      // format the date
+      var dateObj = new Date(dream.timestamp)
+        , date_format
+        , month = (dateObj.getMonth() + 1)
+        , day = dateObj.getDate()
+        , year = dateObj.getFullYear();
 
-        // post the dream to the dreamcatcher
-        this.dream = DreamsDB.post(dreamObj);
-    
-        // notify the awake
-        Mojo.Controller.getAppController().showBanner("Dream saved", { 
-          source: 'notification' 
-        });
-      }
+      // fix 9 into 09 for MM/DD/YYYY format
+      month = (month > 9) ? month : "0" + month;
+      day = (day > 9) ? day : "0" + day;
+      date_format = month.toString() + day.toString() + year.toString();
+
+      this.dream.date_format = date_format;
+
+      // add to the dreamcatcher
+      this.dream.save();
+
+      // update the index
+      this.dream.updateSearchIndex();
+
+      // notify the awake
+      Mojo.Controller.getAppController().showBanner("Dream saved", { 
+        source: 'notification' 
+      });
     }
   },
 

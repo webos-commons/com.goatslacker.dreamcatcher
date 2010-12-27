@@ -30,62 +30,6 @@ DreamsAssistant.prototype = {
   handlers: { },
 
   setup: function () {
-
-    // ======================================  
-    // Preferences
-    // ======================================
-
-    // load prefs
-    DreamsDB.loadPrefs((function (prefs) {
-
-      // password
-      if (DreamsDB.prefs.passwordProtect && DreamsDB.locked) {
-        Mojo.Controller.stageController.swapScene({ name: "password" });
-      }
-    
-      // theme
-      this.controller.get('myBodyIsYourBody').className = "palm-" + DreamsDB.prefs.theme;
-
-      // wallpaper
-      if (DreamsDB.prefs.wallpaper) {
-        this.controller.get('myBodyIsYourBody').style.backgroundImage = "url('" + DreamsDB.prefs.wallpaper + "')";
-
-      // load system wallpaper
-      } else {
-        DreamsDB.ServiceRequest.request('palm://com.palm.systemservice', {
-          method:"getPreferences",                                                          
-          parameters: {
-            keys: ["wallpaper"],
-            subscribe: true
-          },
-          onSuccess: (function (event) {
-            var wallpaperImage = "file://" + event.wallpaper.wallpaperFile;
-            this.controller.get('myBodyIsYourBody').style.backgroundImage = "url('" + wallpaperImage + "')";
-          }).bind(this)
-        });
-      }
-
-      // screen brightness
-      this.controller.get('iWontTellAnybody').style.opacity = ((100 - DreamsDB.prefs.brightness) / 100);
-
-      // keep the app on
-      if (DreamsDB.prefs.alwaysOn === true) {
-        this.controller.stageController.setWindowProperties({
-          blockScreenTimeout: true
-        });
-      }
-
-      // rotate
-      if (DreamsDB.prefs.allowRotate) {
-        this.controller.stageController.setWindowOrientation("free");
-      } else {
-        this.controller.stageController.setWindowOrientation("up");
-      }
-
-      this.load();
-
-    }).bind(this), this.load.bind(this));
-
     // ======================================  
     // Menus
     // ======================================  
@@ -131,15 +75,6 @@ DreamsAssistant.prototype = {
       orderDreams: this.orderDreams.bind(this),
       deleteDream: this.deleteDream.bind(this)
     };
-
-  },
-
-  load: function () {
-    // unlock the dreams
-    DreamsDB.locked = false;
-
-    // activate scene
-    this.activate();
   },
 
   updateDreams: function (dreams) {
@@ -175,8 +110,17 @@ DreamsAssistant.prototype = {
   activate: function (event) {
     // load dreams into items model
     if (!DreamsDB.locked) {
-      DreamsDB.get(this.updateDreams.bind(this));
+      DreamPeer.retrieveLatest(this.updateDreams.bind(this)); // TODO make this function
 
+      // to add to DreamPeer
+/*
+      retrieveLatest: function (callback) {
+        var c = new Snake.Criteria();
+        c.addDescendingOrderByColumn(DreamPeer.ID);
+        DreamPeer.doSelect(c, callback);
+      }
+*/
+      
       // ======================================  
       // Listeners
       // ======================================  

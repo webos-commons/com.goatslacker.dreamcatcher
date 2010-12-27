@@ -85,19 +85,18 @@ Snake.init = function (o) {
   var self = Snake;  
 
   if (!o) {
-    console.log("Error, configuration file not loaded");
+    Mojo.Log.error("Error, configuration file not loaded");
     return false;
   }
 
   self.loadSchema(o);
   //Snake.buildSql();
-/*
+
   self.connect(function () {
     self.insertSql();
   }, function (errorText) {
-    console.log(errorText);
+    Mojo.Log.error(errorText);
   });
-*/
 };
 
 Snake.ready = function (func) {
@@ -135,22 +134,22 @@ Snake.query = function (query, onSuccess, onFailure) {
   var self = Snake;
 
   onSuccess = onSuccess || function (transaction, results) {
-    console.log(transaction);
-    console.log(results);
+    Mojo.Log.info(transaction);
+    Mojo.Log.info(results);
   };
   onFailure = onFailure || function (transaction, error) {
-    console.log(transaction);
-    console.log(error);
+    Mojo.Log.info(transaction);
+    Mojo.Log.info(error);
   };
 
   if (!self.db) {
-    console.log("Database not connected");
+    Mojo.Log.error("Database not connected");
     return false;
   } else {
     self.db.transaction(function (transaction) {
-      console.log('===Excuting Query===');
+      Mojo.Log.info('===Excuting Query===');
       query = query + ";";
-      console.log(query);
+      Mojo.Log.info(query);
 
       transaction.executeSql(query, [], onSuccess, onFailure);
     });
@@ -173,8 +172,6 @@ Snake.insertSql = function (drop_existing) {
 
   // execute onloads...
   for (var i = 0; i < self._chain.length; i = i + 1) {
-    console.log('hi');
-    console.log(self._chain[i]);
     self._chain[i]();
   }
   self._chain = [];
@@ -190,7 +187,12 @@ Snake.Base = Class.extend({
   },
 
   save: function () {
-    this.peer.update(this);
+    this.peer.doUpdate(this);
+  },
+
+  // delete
+  remove: function () {
+    this.peer.doDeleteRecord(this);
   }
 });
 
@@ -206,9 +208,21 @@ Snake.BasePeer.prototype = {
   doSelect: function (criteria, callback) {
     criteria = criteria || new Snake.Criteria();
     criteria.executeSelect(this, callback);
-  }, 
+  },
 
-  update: function (model) {
+  // TODO test!
+  doDeleteRecord: function (model) {
+    var criteria = new Snake.Criteria();
+    criteria.add(model.ID, model.id);
+    this.doDelete(criteria);
+  },
+
+  doDelete: function (criteria) {
+    criteria = criteria || new Snake.Criteria();
+    criteria.executeDelete(this);
+  },
+
+  doUpdate: function (model) {
     var criteria = new Snake.Criteria();
     if (model.id === null) {
       criteria.executeInsert(model, this);
@@ -385,75 +399,25 @@ Snake.Criteria.prototype = {
     });
 
     Snake.query(sql);
-  }
-};
+  },
 
-/*
-// creates the SQL from the schema
-Snake.buildSql = function () {
-  var o = Snake.config;
+  executeDelete: function (peer) {
+    this.from = peer.tableName;  
 
-  if (!o.sql) {
-    o.sql = [];
-    // build sql
-    for (var tableName in o.schema) {
-      if (o.schema.hasOwnProperty(tableName)) {
+    // build select
+    var sql = "DELETE FROM #{from}".interpolate({
+      from: this.from
+    });
 
-        // init sql
-        var sql = "CREATE TABLE IF NOT EXISTS '#{table}' (#{columns})";
-
-        // table object
-        var table = o.schema[tableName];
-
-        // columns array
-        var columns = [];
-        var foreign = {
-          key: [],
-          table: [],
-          reference: []
-        };
-
-        // loop through each column
-        for (var columnName in table.columns) {
-          if (table.columns.hasOwnProperty(columnName)) {
-
-            // column object
-            var column = table.columns[columnName];
-
-            // push into columns array
-            columns.push("#{column} #{type} #{constraints}".interpolate({
-              column: columnName,
-              type: column.type.toUpperCase()
-            }));
-
-            if (column.foreign) {
-              var foreignItem = column.foreign.split(".");
-              foreign.key.push(columnName);
-              foreign.table.push(foreignItem[0]);
-              foreign.reference.push(foreignItem[1]);
-            }
-
-          }
-        }
-
-        // interpolate the sql
-        sql = sql.interpolate({
-          table: tableName,
-          columns: columns
-        });
-
-        if (foreign.key.length > 0) { // TODO test
-          sql = sql + " FOREIGN KEY (#{key}) REFERENCES #{table}(#{reference})".interpolate({
-            key: foreign.key,
-            table: foreign.table,
-            reference: foreign.reference
-          });
-        }
-
-        // load into config
-        Snake.config.sql.push(sql);
-      }
+    // where
+    if (this.where.length > 0) {
+      sql = sql + " WHERE #{where}".interpolate({ where: this.where });
     }
+
+    // reset results
+    this.from = [];
+    this.where = [];
+
+    Snake.query(sql);
   }
 };
-*/

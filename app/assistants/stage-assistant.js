@@ -4,24 +4,12 @@ function StageAssistant () {
 
 StageAssistant.prototype.setup = function () {
 	/* this function is for setup tasks that have to happen when the stage is first created */
-  Mojo.Controller.stageController.pushScene({ name: "dreams" });
-
-  // initialize the dreams database
-  DreamsDB.initialize();
-
-  DreamsDB.Metrix = new Metrix();
-  DreamsDB.AjaxRequest = new AjaxRequestWrapper();
-  DreamsDB.ServiceRequest = new ServiceRequestWrapper();
-  DreamsDB.Metrix.postDeviceData();
-
-  if (DreamsDB.Metrix) {
-    DreamsDB.hasMetrix = true;
-  }
+  Mojo.Controller.stageController.pushScene({ name: "splash" });
 };
 
 StageAssistant.prototype.handleCommand = function (event) {
   if (event.type === Mojo.Event.command) {
-    var scenes = Mojo.Controller.stageController.getScenes(), topScene = scenes[scenes.length - 1], swap = false;
+    var scenes = Mojo.Controller.stageController.getScenes(), topScene = scenes[scenes.length - 1];
 
     switch (event.command) {
     case 'help':
