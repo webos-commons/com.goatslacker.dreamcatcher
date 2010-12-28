@@ -107,5 +107,93 @@ var DreamsDB = {
 
   savePrefs: function () {
     this.database.add("prefs", this.prefs);
+  },
+
+  updateSearchIndex: function (dream) {
+    dream = dream || new Dream();
+
+    dream.title = dream.title || "";
+    dream.summary = dream.summary || "";
+    
+    // get keywords and push them into an array repeated by weight...
+    var summary = dream.summary.split(" ")
+      , title = dream.title.split(" ")
+      , keywords = title.concat(title, title, summary)
+      , stop = [
+        'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours',
+        'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers',
+        'herself', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves',
+        'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are',
+        'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does',
+        'did', 'doing', 'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until',
+        'while', 'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into',
+        'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down',
+        'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here',
+        'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more',
+        'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so',
+        'than', 'too', 'very', 'put', 'also', 'other', 'gave', 'well', 'know', 'make', 'seen',
+        'let', ''
+      ]
+      , splice = false
+      , keys = []
+      , i = 0
+      , j = 0
+      , c = null;
+
+    // delete existing keywords
+    c = new Snake.Criteria();
+    c.add(DreamSearchPeer.DREAM_ID, dream.id);
+    DreamSearchPeer.doDelete(c); // TODO doDelete
+
+    // remove stop words
+
+    // then remove all the stop words
+    // and remove all sepcial chars, stem the words
+
+    for (i = 0; i < keywords.length; i = i + 1) {
+      for (j = 0; j < stop.length; j = j + 1) {
+        if (stop[j] === keywords[i].toLowerCase()) {
+          splice = true;
+        }
+      }
+
+      if (!splice) {
+        keys.push(stemmer(keywords[i].replace(/[^a-zA-Z 0-9]+/g,''))); // remove special chars, stem and push into keys
+      }
+
+      splice = false;
+    }
+
+    keys.sort();
+
+    keywords = {};
+
+    // add up the weights
+
+    for (i = 0; i < keys.length; i = i + 1) {
+      if (i > 0 && keys[i] === keys[i - 1]) {
+        keywords[keys[i]]++;
+      } else {
+        keywords[keys[i]] = 1;
+      }
+    }
+
+    console.log(keywords);
+
+    // add to database!
+
+    for (i in keywords) {
+      if (keywords.hasOwnProperty(i)) {
+        var ds = new DreamSearch();
+        ds.dream_id = dream.id;
+        ds.word = ""; // FIXME
+        ds.stem = i;
+        ds.weight = keywords[i];
+        console.log(ds);
+        //ds.save();
+      }
+    }
   }
+
 };
+

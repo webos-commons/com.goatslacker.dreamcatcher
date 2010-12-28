@@ -85,7 +85,7 @@ Snake.init = function (o) {
   var self = Snake;  
 
   if (!o) {
-    Mojo.Log.error("Error, configuration file not loaded");
+    console.log("Error, configuration file not loaded");
     return false;
   }
 
@@ -95,7 +95,7 @@ Snake.init = function (o) {
   self.connect(function () {
     self.insertSql();
   }, function (errorText) {
-    Mojo.Log.error(errorText);
+    console.log(errorText);
   });
 };
 
@@ -134,22 +134,22 @@ Snake.query = function (query, onSuccess, onFailure) {
   var self = Snake;
 
   onSuccess = onSuccess || function (transaction, results) {
-    Mojo.Log.info(transaction);
-    Mojo.Log.info(results);
+    console.log(transaction);
+    console.log(results);
   };
   onFailure = onFailure || function (transaction, error) {
-    Mojo.Log.info(transaction);
-    Mojo.Log.info(error);
+    console.log(transaction);
+    console.log(error);
   };
 
   if (!self.db) {
-    Mojo.Log.error("Database not connected");
+    console.log("Database not connected");
     return false;
   } else {
     self.db.transaction(function (transaction) {
-      Mojo.Log.info('===Excuting Query===');
+      console.log('===Excuting Query===');
       query = query + ";";
-      Mojo.Log.info(query);
+      console.log(query);
 
       transaction.executeSql(query, [], onSuccess, onFailure);
     });
@@ -172,6 +172,8 @@ Snake.insertSql = function (drop_existing) {
 
   // execute onloads...
   for (var i = 0; i < self._chain.length; i = i + 1) {
+    console.log('hi');
+    console.log(self._chain[i]);
     self._chain[i]();
   }
   self._chain = [];
@@ -242,6 +244,7 @@ Snake.BasePeer.prototype = {
 Snake.Criteria = function () {
   this.select = [];
   this.from = [];
+  this.join = [];
   this.where = [];
   this.order = [];
   this.limit = false;
@@ -255,6 +258,9 @@ Snake.Criteria.prototype = {
   LESS_THAN: "<", 
   GREATER_EQUAL: ">=", 
   LESS_EQUAL: "<=",
+  LEFT_JOIN: "LEFT JOIN",
+  RIGHT_JOIN: "RIGHT_JOIN",
+  INNER_JOIN: "INNER_JOIN",
 
   add: function (field, value, selector) {
     selector = this[selector] || this["EQUAL"];
@@ -267,6 +273,29 @@ Snake.Criteria.prototype = {
 
     // where
     this.where.push(where);
+  },
+
+  addJoin: function (join1, join2, join_method) {
+    join_method = this[join_method] || this["LEFT_JOIN"];
+
+    var db1 = join1.split(".")
+      , db2 = join2.split(".")
+      , table1 = db1[0]
+      , field1 = db1[1]
+      , table2 = db2[0]
+      , field2 = db2[1];
+
+    this.join.push({
+      method: join_method,
+      from: {
+        table: table1,
+        field: field1
+      },
+      to: {
+        table: table2,
+        field: field2
+      }
+    });
   },
 
   addDescendingOrderByColumn: function (column) {
@@ -308,12 +337,25 @@ Snake.Criteria.prototype = {
         this.from.push(from[0]);
       }
     }
+    // what happens if there are multiple froms???
 
     // build select
     var sql = "SELECT #{select} FROM #{from}".interpolate({
       select: this.select,
       from: this.from
     });
+
+    // join FIXME
+    if (this.join.length > 0) {
+      for (var i = 0; i < this.join.length; i = i + 1) {
+        sql = sql + " #{method} #{table} ON #{reference} = #{table}.#{key}".interpolate({
+          method: this.join[i].method,
+          reference: this.join[i].from.table + "." + this.join[i].from.field,
+          table: this.join[i].to.table,
+          key: this.join[i].to.field
+        });
+      }
+    }
 
     // where
     if (this.where.length > 0) {
@@ -329,7 +371,7 @@ Snake.Criteria.prototype = {
       sql = sql + " LIMIT #{limit}".interpolate({ limit: this.limit });
     }
 
-    // reset results
+    // reset results ??
     this.select = [];
     this.from = [];
     this.where = [];
@@ -341,7 +383,6 @@ Snake.Criteria.prototype = {
         for (var i = 0; i < results.rows.length; i = i + 1) {
 
           var obj = results.rows.item(i);
-          //var tmp = new window[Snake.config.schema[peer.tableName].jsName];
           var tmp = new window[peer.jsName];
 
           for (var prop in obj) {
@@ -418,6 +459,6 @@ Snake.Criteria.prototype = {
     this.from = [];
     this.where = [];
 
-    Snake.query(sql);
+    console.log(sql);
   }
 };
