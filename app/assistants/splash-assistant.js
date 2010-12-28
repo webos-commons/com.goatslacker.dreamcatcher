@@ -22,71 +22,81 @@ SplashAssistant.prototype = {
     // load prefs
     DreamsDB.loadPrefs((function (prefs) {
 
-      // TODO - deprecate the dreamsdb database
+      // Deprecate the dreamsdb database
       if (DreamsDB.prefs.noDepot === false) {
-        // prompt user that they are upgrading their data and should backup!
-        // backup their data if yes, and then deprecate
-        // else deprecate
 
-        // if not loaded into new sql...
-        // for loop and add into Snake
-        //DreamsDB.get(this.updateDreams.bind(this));
-        DreamsDB.deprecate();
-  
-        // TODO don't continue loading until dreamsDB has been deprecated, restart app!
-      }
+        // prompt user that they are upgrading their data!
+        this.controller.errorDialog("Dreamcatcher will be upgrading it's data to the latest version. This may take a minute or two.");
 
-      // password
-      if (DreamsDB.prefs.passwordProtect && DreamsDB.locked) {
-        Mojo.Controller.stageController.swapScene({ name: "password" });
-      }
-    
-      // theme
-      this.controller.get('myBodyIsYourBody').className = "palm-" + DreamsDB.prefs.theme;
+        // show scrim with spinner or status messages...???
 
-      // wallpaper
-      if (DreamsDB.prefs.wallpaper) {
-        this.controller.get('myBodyIsYourBody').style.backgroundImage = "url('" + DreamsDB.prefs.wallpaper + "')";
+        DreamsDB.deprecate((function () {
+          this.controller.errorDialog("Done. Dreamcatcher is now up-to-date. Enjoy the new Search features!");
 
-      // load system wallpaper
+          // apply the user preferences from ealier, unlock the app, and move on...
+          this.updatePrefs(prefs);
+        }).bind(this));
+
+      // the Depot is already deprecated, apply the user preferences.
       } else {
-        DreamsDB.ServiceRequest.request('palm://com.palm.systemservice', {
-          method:"getPreferences",                                                          
-          parameters: {
-            keys: ["wallpaper"],
-            subscribe: true
-          },
-          onSuccess: (function (event) {
-            var wallpaperImage = "file://" + event.wallpaper.wallpaperFile;
-            this.controller.get('myBodyIsYourBody').style.backgroundImage = "url('" + wallpaperImage + "')";
-          }).bind(this)
-        });
+        this.updatePrefs(prefs);
       }
-
-      // screen brightness
-      this.controller.get('iWontTellAnybody').style.opacity = ((100 - DreamsDB.prefs.brightness) / 100);
-
-      // keep the app on
-      if (DreamsDB.prefs.alwaysOn === true) {
-        this.controller.stageController.setWindowProperties({
-          blockScreenTimeout: true
-        });
-      }
-
-      // rotate
-      if (DreamsDB.prefs.allowRotate) {
-        this.controller.stageController.setWindowOrientation("free");
-      } else {
-        this.controller.stageController.setWindowOrientation("up");
-      }
-
-      this.unlock();
-
     }).bind(this), this.unlock.bind(this));
+
+  },
+
+  updatePrefs: function (prefs) {
+    // password
+    if (DreamsDB.prefs.passwordProtect && DreamsDB.locked) {
+      Mojo.Controller.stageController.swapScene({ name: "password" });
+    }
+  
+    // theme
+    this.controller.get('myBodyIsYourBody').className = "palm-" + DreamsDB.prefs.theme;
+
+    // wallpaper
+    if (DreamsDB.prefs.wallpaper) {
+      this.controller.get('myBodyIsYourBody').style.backgroundImage = "url('" + DreamsDB.prefs.wallpaper + "')";
+
+    // load system wallpaper
+    } else {
+      DreamsDB.ServiceRequest.request('palm://com.palm.systemservice', {
+        method:"getPreferences",                                                          
+        parameters: {
+          keys: ["wallpaper"],
+          subscribe: true
+        },
+        onSuccess: (function (event) {
+          var wallpaperImage = "file://" + event.wallpaper.wallpaperFile;
+          this.controller.get('myBodyIsYourBody').style.backgroundImage = "url('" + wallpaperImage + "')";
+        }).bind(this)
+      });
+    }
+
+    // screen brightness
+    this.controller.get('iWontTellAnybody').style.opacity = ((100 - DreamsDB.prefs.brightness) / 100);
+
+    // keep the app on
+    if (DreamsDB.prefs.alwaysOn === true) {
+      this.controller.stageController.setWindowProperties({
+        blockScreenTimeout: true
+      });
+    }
+
+    // rotate
+    if (DreamsDB.prefs.allowRotate) {
+      this.controller.stageController.setWindowOrientation("free");
+    } else {
+      this.controller.stageController.setWindowOrientation("up");
+    }
+
+    // unlock the app
+    this.unlock();
   },
 
   unlock: function () {
     DreamsDB.locked = false;
     Mojo.Controller.stageController.pushScene({ name: "dreams" });
   }
+
 };

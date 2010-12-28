@@ -55,7 +55,7 @@ var DreamsDB = {
     }
   },
 
-  deprecate: function () {
+  deprecate: function (callback) {
     // add
     if (this.prefs.noDepot === false) {
 
@@ -64,33 +64,55 @@ var DreamsDB = {
           if (data) {
             this.dreams = data;
           }
-          this._deprecate(this.dreams);
+          this._deprecate(this.dreams, callback);
         }).bind(this));
       } else {
-        this._deprecate(this.dreams);
+        this._deprecate(this.dreams, callback);
       }
 
     }
   },
 
-  _deprecate: function (dreams) {
+  // TODO TEST - this should be working in theory. We only need to test it
+  _deprecate: function (dreams, callback) {
     var i = 0
-      , dream;
+      , dream
+      , dreams = [];
 
     for (i = 0; i < dreams.length; i = i + 1) {
       dream = new Dream();
       dream.title = dreams[i].title;
       dream.summary = dreams[i].dream;
-      dream.date_format = dreams[i].date_format;
+      dream.dream_date = dreams[i].date_format;
       dream.created_at = dreams[i].timestamp;
-      dream.save();
+  
+      // TODO support tags?? -- use spaces or commas and prompt user for the rest of the tags?
+
+      dream.save(); // TODO - need to return BOOLEAN here
+
+      DreamsDB.updateSearchIndex(dream); // update the search index
+
+      // if one of the dream fails, I need to capture which dream it is and do something with that dream.
+      // perhaps have a mix of both SQL and Depot ... there should be no reason for this though.
+      // either way we should test with all sorts of funky characters.
+
+      dreams.push(dream);
     }
 
     // make sure there are no errors and then dump the database
-    this.database.add('dreams', {});
+    this.dreams = {};
+    this.database.add('dreams', this.dreams);
+    // if there are errors, then what?
+
+    this.dreams = dreams;
 
     // set in prefs that we're not using depot anymore
     this.prefs.noDepot = true;
+    this.savePrefs();
+
+    if (callback) {
+      callback();
+    }
   },
 
   loadPrefs: function (onSuccess, onFailure) {
@@ -143,7 +165,7 @@ var DreamsDB = {
     // delete existing keywords
     c = new Snake.Criteria();
     c.add(DreamSearchPeer.DREAM_ID, dream.id);
-    DreamSearchPeer.doDelete(c); // TODO doDelete
+    DreamSearchPeer.doDelete(c); // TODO test out doDelete
 
     // remove stop words
 
