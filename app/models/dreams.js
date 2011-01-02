@@ -73,7 +73,6 @@ var DreamsDB = {
     }
   },
 
-  // TODO TEST - this should be working in theory. We only need to test it
   _deprecate: function (dreams, callback) {
     var dream = null
       , i = 0
@@ -103,14 +102,16 @@ var DreamsDB = {
             tag.tag = dreams[i].tags[j].replace(/[^a-zA-Z 0-9]+/g,'');
             tag.normalized = tag.tag.toLowerCase().split(" ").join("-");
 
-            tag.save();
-            tags.push(tag.tag);
+            if (tag.tag) {
+              tag.save();
+              tags.push(tag.tag);
+            }
           }
 
           model.tags = tags;
         }
 
-        updateSearchIndex(model); 
+        this.updateSearchIndex(model); 
       }).bind(this, i));
     }
 
@@ -180,6 +181,7 @@ var DreamsDB = {
     } else {
       // hydrates a record set
       Snake.query(query.interpolate({ words: q }), stemmed_words, Snake.hydrateRS.bind(this, DreamPeer, function (dreams) {
+        dreams = dreams || [];
         callback(dreams);
       }));
     }

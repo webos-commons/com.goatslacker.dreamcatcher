@@ -49,15 +49,15 @@ DreamsAssistant.prototype = {
       reorderable: true
     }, this.models.dreams);
 
-/*
     // search
     this.controller.setupWidget("searchr", {
       enterSubmits: true,
       preventResize: true,
       requiresEnterKey: true
     }, { value: null });
-    this.controller.get("search").hide();
+    //this.controller.get("search").hide();
 
+/*
     // sort
     this.controller.setupWidget("sort", false, this.models.sort);
 */
@@ -72,12 +72,14 @@ DreamsAssistant.prototype = {
 
     this.handlers = {
       viewDream: this.viewDream.bind(this),
-      orderDreams: this.orderDreams.bind(this),
-      deleteDream: this.deleteDream.bind(this)
+      deleteDream: this.deleteDream.bind(this),
+      doSearch: this.doSearch.bind(this)
     };
   },
 
   updateDreams: function (dreams) {
+    this.dreams = dreams;
+
     if (this.controller) {
       this.controller.get('spinnerScrim').hide();
       this.models.spinner.spinning = false;
@@ -88,47 +90,22 @@ DreamsAssistant.prototype = {
   },
 
   sortDreams: function (event) {
-/*
-    switch (event.value) {
-    // sort by date ascending
-    case '1':
-      for (var i = 0; i < DreamsDB.dreams.length; i = i + 1) {
-        Mojo.Log.error(DreamsDB.dreams[i].timestamp);
-      }
-      break;
-
-    // sort by date descending
-    case '2':
-      for (var i = 0; i < DreamsDB.dreams.length; i = i + 1) {
-        Mojo.Log.error(DreamsDB.dreams[i].timestamp);
-      }
-      break;
-    }
-*/
   },
 
   activate: function (event) {
     // load dreams into items model
     if (!DreamsDB.locked) {
-      DreamsDB.retrieveLatest(this.updateDreams.bind(this)); // TODO make this function
+      DreamsDB.retrieveLatest(this.updateDreams.bind(this));
 
-      // to add to DreamPeer
-/*
-      retrieveLatest: function (callback) {
-        var c = new Snake.Criteria();
-        c.addDescendingOrderByColumn(DreamPeer.ID);
-        DreamPeer.doSelect(c, callback);
-      }
-*/
-      
       // ======================================  
       // Listeners
       // ======================================  
 
       Mojo.Event.listen(this.controller.get('dreams'), Mojo.Event.listAdd, this.addDream);
       Mojo.Event.listen(this.controller.get('dreams'), Mojo.Event.listTap, this.handlers.viewDream);
-      Mojo.Event.listen(this.controller.get('dreams'), Mojo.Event.listReorder, this.handlers.orderDreams);
       Mojo.Event.listen(this.controller.get('dreams'), Mojo.Event.listDelete, this.handlers.deleteDream);
+      Mojo.Event.listen(this.controller.get('searchr'), Mojo.Event.propertyChange, this.handlers.doSearch);
+
       //Mojo.Event.listen(this.controller.get('sort'), Mojo.Event.propertyChanged, this.sortDreams.bind(this));
     }
   },
@@ -136,24 +113,13 @@ DreamsAssistant.prototype = {
   deactivate: function (event) {
     Mojo.Event.stopListening(this.controller.get('dreams'), Mojo.Event.listAdd, this.addDream);
     Mojo.Event.stopListening(this.controller.get('dreams'), Mojo.Event.listTap, this.handlers.viewDream);
-    Mojo.Event.stopListening(this.controller.get('dreams'), Mojo.Event.listReorder, this.handlers.orderDreams);
     Mojo.Event.stopListening(this.controller.get('dreams'), Mojo.Event.listDelete, this.handlers.deleteDream);
+    Mojo.Event.stopListening(this.controller.get('searchr'), Mojo.Event.propertyChange, this.handlers.doSearch);
     //Mojo.Event.stopListening(this.controller.get('sort'), Mojo.Event.propertyChanged, this.sortDreams.bind(this));
   },
 
   viewDream: function (event) {
     Mojo.Controller.stageController.pushScene({ name: "dream" }, event.item);
-  },
-
-  orderDreams: function (event) {
-/*
-    this.models.sort.value = 1;
-    this.controller.modelChanged(this.models.sort);
-*/
-
-    DreamsDB.dreams.splice(event.fromIndex, 1);
-    DreamsDB.dreams.splice(event.toIndex, 0, event.item);
-    DreamsDB.save();
   },
 
   addDream: function () {
@@ -166,6 +132,10 @@ DreamsAssistant.prototype = {
     DreamPeer.doDelete(c);
   },
 
+  doSearch: function (event) {
+    DreamsDB.doSearch(event.value, this.updateDreams.bind(this));
+  },
+
   handleCommand: function (event) {
     if (event.type === Mojo.Event.command) {
       switch (event.command) {
@@ -175,8 +145,8 @@ DreamsAssistant.prototype = {
       case "send":
         var text = [], i;
 
-        for (i = 0; i < DreamsDB.dreams.length; i = i + 1) {
-          text.push(DreamsDB.dreams[i].dream_date + "<br />----<br />" + DreamsDB.dreams[i].summary);
+        for (i = 0; i < this.dreams.length; i = i + 1) {
+          text.push(this.dreams[i].dream_date + "<br />----<br />" + this.dreams[i].summary);
         }
 
         this.controller.serviceRequest("palm://com.palm.applicationManager", {
@@ -191,7 +161,7 @@ DreamsAssistant.prototype = {
         });
         break;
       case "refresh":
-        DreamsDB.get(this.updateDreams.bind(this));
+        DreamsDB.retrieveLatest(this.updateDreams.bind(this));
         break;
       }
     }

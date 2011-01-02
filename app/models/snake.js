@@ -119,7 +119,7 @@ Snake.init = function (o) {
   var self = Snake;  
 
   if (!o) {
-    console.log("Error, configuration file not loaded");
+    Mojo.Log.error("Error, configuration file not loaded");
     return false;
   }
 
@@ -131,7 +131,7 @@ Snake.init = function (o) {
   self.connect(function () {
     self.insertSql();
   }, function (errorText) {
-    console.log(errorText);
+    Mojo.Log.error(errorText);
   });
 };
 
@@ -193,16 +193,16 @@ Snake.query = function (query, params, onSuccess, onFailure) {
   params = params || null;
 
   onSuccess = onSuccess || function (transaction, results) {
-    console.log(transaction);
-    console.log(results);
+    Mojo.Log.error(transaction);
+    Mojo.Log.error(results);
   };
   onFailure = onFailure || function (transaction, error) {
-    console.log(transaction);
-    console.log(error);
+    Mojo.Log.error(transaction);
+    Mojo.Log.error(error);
   };
 
   if (!self.db) {
-    console.log("Database not connected");
+    Mojo.Log.error("Database not connected");
     return false;
   } else {
   
@@ -214,9 +214,9 @@ Snake.query = function (query, params, onSuccess, onFailure) {
 
       // debugging
       if (self.debug) {
-        console.log(query);
+        Mojo.Log.error(query);
         if (params) {
-          console.log(params);
+          Mojo.Log.error(params);
         }
       }
 

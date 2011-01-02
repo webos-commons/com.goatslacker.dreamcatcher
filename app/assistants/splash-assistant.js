@@ -26,16 +26,31 @@ SplashAssistant.prototype = {
       if (DreamsDB.prefs.noDepot === false) {
 
         // prompt user that they are upgrading their data!
-        this.controller.errorDialog("Dreamcatcher will be upgrading it's data to the latest version. This may take a minute or two. Do not close or restart the app until the data transfer has completed");
+        this.controller.showAlertDialog({
+          onChoose: (function () {
 
-        // show scrim with spinner or status messages...???
+            // show scrim with spinner or status messages...???
 
-        DreamsDB.deprecate((function () {
-          this.controller.errorDialog("Done merging data. Dreamcatcher is now up-to-date. Enjoy the new Search features!");
+            // begin the deprecation
+            DreamsDB.deprecate((function () {
+              this.controller.showAlertDialog({
+                onChoose: (function () {
+                  // apply the user preferences from ealier, unlock the app, and move on...
+                  this.updatePrefs(prefs);
 
-          // apply the user preferences from ealier, unlock the app, and move on...
-          this.updatePrefs(prefs);
-        }).bind(this));
+                }).bind(this),
+                title: "Success!",
+                message: "Done merging data. Dreamcatcher is now up-to-date. Enjoy the new Search features ^_^",
+                choices:[{ label: "Ok", value:"cancel", type:'affirmative'}]
+              }); 
+
+            }).bind(this));
+
+          }).bind(this),
+          title: "Upgrading Application",
+          message: "Dreamcatcher needs a minute or two to sort your dreams for the new search features. Do not close or restart the app until the process has completed.",
+          choices:[{ label: "Ok", value:"cancel", type:'affirmative'}]
+        }); 
 
       // the Depot is already deprecated, apply the user preferences.
       } else {
