@@ -1,6 +1,9 @@
-// Prototype
+/*global window openDatabase Class */
+/*jslint white: true, browser: true, devel: true, evil: true, laxbreak: true, onevar: true, undef: true, nomen: true, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, indent: 2 */
+
+// Prototype functions
 Array.prototype.in_array = function (val) {
-  for (var i = 0; i < this.length; i++) {
+  for (var i = 0; i < this.length; i = i + 1) {
     if (this[i] === val) {
       return true;
     }
@@ -8,6 +11,31 @@ Array.prototype.in_array = function (val) {
   return false;
 };
 
+/*
+  Inserts a foreign object into a template.
+  @param foreign Object
+  @return String
+*/
+String.prototype.interpose = function (foreign) {
+  var str = this.toString()
+    , regexpx = null
+    , value = null
+    , i = false;
+
+  for (i in foreign) {
+    if (foreign.hasOwnProperty(i)) {
+      regexpx = eval("/#{" + i + "}/g");
+      value = (Object.prototype.toString.call(foreign[i]) === '[object Array]') ? foreign[i].join(", ") : foreign[i];
+      str = str.replace(regexpx, value);
+    }
+  }
+  return str;
+};
+
+// TODO
+// document
+
+// jslint comply this?
 /* Simple JavaScript Inheritance
  * By John Resig http://ejohn.org/
  * MIT Licensed.
@@ -74,13 +102,19 @@ Array.prototype.in_array = function (val) {
 
 // base object
 var Snake = {
-  _chain: [],
+  version: "0.0.20",
+  $nk_chain: [],
   db: false,
   config: {},
+  debug: true,
   has_loaded: false
 };
 
-// TODO support verisioning!
+/*
+  Initializes Snake with a schema, connects to the database and creates necessary tables.
+  @param o Object
+  TODO support versioning
+*/
 Snake.init = function (o) {
   var self = Snake;  
 
@@ -89,9 +123,11 @@ Snake.init = function (o) {
     return false;
   }
 
+  // loads the schema into Snake
   self.loadSchema(o);
-  //Snake.buildSql();
 
+  // connects to database
+  // onSuccess, inserts the Sql from the loaded schema
   self.connect(function () {
     self.insertSql();
   }, function (errorText) {
@@ -99,29 +135,43 @@ Snake.init = function (o) {
   });
 };
 
+/*
+  Functions to execute when Snake is ready.
+  @param func Object function
+*/
 Snake.ready = function (func) {
   var self = Snake;
   if (self.has_loaded) {
     func();
   } else {
-    self._chain.push(func);
+    self.$nk_chain.push(func);
   }
 };
 
-// load all items into a config file
+/*
+  Loads the schema into Snake
+*/
 Snake.loadSchema = function (o) {
   var self = Snake;
-  // TODO need to load defaults...
   self.config = o;
 };
 
-// Create the database connection
+/*
+  Creates the database connection
+  @param onSuccess Object function
+  @param onFailure Object function
+*/
 Snake.connect = function (onSuccess, onFailure) {
   var self = Snake, db = self.config.database;
+
+  // defaults
   onSuccess = onSuccess || function () {};
   onFailure = onFailure || function () {};
+
+  // HTML5 openDatabase
   self.db = openDatabase(db.name, db.version, db.displayName, db.size);
 
+  // callbacks
   if (!self.db) {
     onFailure("Could not open database");
   } else {
@@ -129,9 +179,18 @@ Snake.connect = function (onSuccess, onFailure) {
   }
 };
 
-// query the database
-Snake.query = function (query, onSuccess, onFailure) {
+/*
+  Performs a query
+  @param query String
+  @param params Array
+  @param onSuccess Object
+  @param onFailure Object
+*/
+Snake.query = function (query, params, onSuccess, onFailure) {
   var self = Snake;
+
+  // defaults
+  params = params || null;
 
   onSuccess = onSuccess || function (transaction, results) {
     console.log(transaction);
@@ -146,106 +205,197 @@ Snake.query = function (query, onSuccess, onFailure) {
     console.log("Database not connected");
     return false;
   } else {
+  
+    // HTML5 database perform query
     self.db.transaction(function (transaction) {
-      console.log('===Excuting Query===');
-      query = query + ";";
-      console.log(query);
 
-      transaction.executeSql(query, [], onSuccess, onFailure);
+      // append semicolon to query
+      query = query + ";";
+
+      // debugging
+      if (self.debug) {
+        console.log(query);
+        if (params) {
+          console.log(params);
+        }
+      }
+
+      // perform query
+      transaction.executeSql(query, params, onSuccess, onFailure);
     });
   }
 };
 
-// loads all the tables into the database
-Snake.insertSql = function (drop_existing) {
-  var self = Snake;
+/*
+  Inserts specified SQL on init
+  TODO drop_existing flag?
+*/
+Snake.insertSql = function () {
+  var self = Snake
+    , i = 0
+    , query = null;
+
   if (self.config.sql.length > 0) {
-    //drop_existing = drop_existing || false;
 
-    var i = 0; query = null; //drop = drop_existing ? "DROP TABLE IF EXISTS..." : "";
-
+    // loop through SQL statements
     for (i = 0; i < self.config.sql.length; i = i + 1) {
       query = self.config.sql[i];
+      // run the queries
       self.query(query);
     }
   }
 
   // execute onloads...
-  for (var i = 0; i < self._chain.length; i = i + 1) {
-    console.log('hi');
-    console.log(self._chain[i]);
-    self._chain[i]();
+  for (i = 0; i < self.$nk_chain.length; i = i + 1) {
+    self.$nk_chain[i]();
   }
-  self._chain = [];
+  self.$nk_chain = [];
 
+  // set Snake to already loaded.
   self.has_loaded = true;
 };
 
 
 // Base Classes
+/*
+  Base Class for the ORM
+*/
 Snake.Base = Class.extend({
+
+  // adds the peer to the model
   init: function (peer) {
     this.peer = peer;
   },
 
-  save: function () {
-    this.peer.doUpdate(this);
+  // saves a record in the database
+  save: function (onSuccess, onFailure) {
+    this.peer.doUpdate(this, onSuccess, onFailure);
   },
 
-  // delete
+  /*
+    Hydrates the model with data from the object, usually returned in a transaction
+    @param obj Object
+  */
+  hydrate: function (obj) {
+    for (var i in obj) {
+      if (obj.hasOwnProperty(i)) {
+        this[i] = obj[i];
+      }
+    }
+  },
+
+  // deletes a record from the database
   remove: function () {
     this.peer.doDeleteRecord(this);
   }
 });
 
+/*
+  Hydrates a recordset from the database into it's respective models
+  @param peer Object
+  @param callback Object
+*/
+Snake.hydrateRS = function (peer, callback, transaction, results) {
+  var model = null
+    , i = 0
+    , model_rs = [];
+
+  // loops through all results in the row
+  for (i = 0; i < results.rows.length; i = i + 1) {
+
+    // creates a new model
+    model = new window[peer.jsName]();
+
+    // hydrates the model
+    model.hydrate(results.rows.item(i)); // YAY for hydrate
+
+    // pushes the results onto an array
+    model_rs.push(model);
+  }
+
+  // executes callback with array
+  callback(model_rs);
+};
+
+/*
+  The peer class of an object. Handles multiple records of items.
+  @param obj Object
+  TODO doCount
+*/
 Snake.BasePeer = function (obj) {
   for (var i in obj) {
-    this[i] = obj[i];
+    if (obj.hasOwnProperty(i)) {
+      this[i] = obj[i];
+    }
   }
 
   return this;
 };
 
 Snake.BasePeer.prototype = {
+
+  // executes a SELECT query
   doSelect: function (criteria, callback) {
     criteria = criteria || new Snake.Criteria();
     criteria.executeSelect(this, callback);
   },
 
-  // TODO test!
+  // executes a SELECT query and returns 1 result
+  doSelectOne: function (criteria, callback) {
+    criteria = criteria || new Snake.Criteria();
+    criteria.setLimit(1);
+    criteria.executeSelect(this, function (result) {
+      if (callback && result.length >= 0) {
+        callback(result[0]);
+      }
+    });
+  },
+
+  // deletes 1 record
   doDeleteRecord: function (model) {
     var criteria = new Snake.Criteria();
-    criteria.add(model.ID, model.id);
+    criteria.add(this.ID, model.id);
     this.doDelete(criteria);
   },
 
+  // deletes multiple records
   doDelete: function (criteria) {
     criteria = criteria || new Snake.Criteria();
     criteria.executeDelete(this);
   },
 
-  doUpdate: function (model) {
+  // executes an INSERT || UPDATE depending on the model
+  doUpdate: function (model, onSuccess, onFailure) {
     var criteria = new Snake.Criteria();
     if (model.id === null) {
-      criteria.executeInsert(model, this);
+      criteria.executeInsert(model, this, onSuccess, onFailure);
     } else {
       criteria.executeUpdate(model, this);
     }
   },
 
+  // retrieves an item by it's PRIMARY KEY
   retrieveByPK: function (pk, callback) {
     var c = new Snake.Criteria();
     c.add(this.ID, pk);
     this.doSelect(c, callback);
   }
+
 };
 
-// Criteria class
+/*
+  Criteria Class
+  Handles all the dirty SQL work
+*/
 Snake.Criteria = function () {
   this.select = [];
   this.from = [];
   this.join = [];
-  this.where = [];
+  this.where = {
+    hasWhere: false,
+    and: [],
+    params: []
+  };
   this.order = [];
   this.limit = false;
   this.group = [];
@@ -263,20 +413,34 @@ Snake.Criteria.prototype = {
   INNER_JOIN: "INNER_JOIN",
 
   add: function (field, value, selector) {
-    selector = this[selector] || this["EQUAL"];
+    selector = this[selector] || this.EQUAL;
 
-    var where = "#{field} #{selector} '#{value}'".interpolate({
+    var where = "#{field} #{selector} ?".interpose({
       field: field,
-      selector: selector,
-      value: value
+      selector: selector
     });
 
-    // where
-    this.where.push(where);
+    this.where.hasWhere = true;
+    this.where.and.push(where);
+    this.where.params.push(value);
   },
 
+/*
+  addOr: function (field, value, selector) {
+    selector = this[selector] || this.EQUAL;
+
+    var where = "#{field} #{selector} ?".interpose({
+      field: field,
+      selector: selector
+    });
+
+    this.where.hasWhere = true;
+    this.where.or.push(where);
+    this.where.params.push(value);
+  },
+*/
   addJoin: function (join1, join2, join_method) {
-    join_method = this[join_method] || this["LEFT_JOIN"];
+    join_method = this[join_method] || this.LEFT_JOIN;
 
     var db1 = join1.split(".")
       , db2 = join2.split(".")
@@ -319,36 +483,41 @@ Snake.Criteria.prototype = {
   },
 
   executeSelect: function (peer, callback) {
+    var i = 0
+      , sql = ""
+      , field = null
+      , from = null
+      , where = null
+      , params = null;
 
     // add select columns
     if (this.select.length === 0) {
-      for (var i = 0; i < peer.columns.length; i = i + 1) {
+      for (i = 0; i < peer.columns.length; i = i + 1) {
         this.select.push(peer.tableName + "." + peer.columns[i]);
       }
     }
 
     // add the from
-    for (var i = 0; i < this.select.length; i = i + 1) {
-      var field = this.select[i];
+    for (i = 0; i < this.select.length; i = i + 1) {
+      field = this.select[i];
 
-      var from = field.split(".");
+      from = field.split(".");
       // tables to select from
       if (!this.from.in_array(from[0])) {
         this.from.push(from[0]);
       }
     }
-    // what happens if there are multiple froms???
+    // what happens if there are multiple froms??? FIXME/test
 
     // build select
-    var sql = "SELECT #{select} FROM #{from}".interpolate({
+    sql = "SELECT #{select} FROM #{from}".interpose({
       select: this.select,
       from: this.from
     });
 
-    // join FIXME
     if (this.join.length > 0) {
-      for (var i = 0; i < this.join.length; i = i + 1) {
-        sql = sql + " #{method} #{table} ON #{reference} = #{table}.#{key}".interpolate({
+      for (i = 0; i < this.join.length; i = i + 1) {
+        sql = sql + " #{method} #{table} ON #{reference} = #{table}.#{key}".interpose({
           method: this.join[i].method,
           reference: this.join[i].from.table + "." + this.join[i].from.field,
           table: this.join[i].to.table,
@@ -358,36 +527,43 @@ Snake.Criteria.prototype = {
     }
 
     // where
-    if (this.where.length > 0) {
-      sql = sql + " WHERE #{where}".interpolate({ where: this.where });
+    if (this.where.hasWhere) {
+      where = this.where.and.join(" AND ");
+      if (this.where.or.length > 0) {
+        where = where + this.where.or.join(" OR ");
+      }
+      sql = sql + " WHERE " + where;
+      params = this.where.params;
     }
 
     // order by
     if (this.order.length > 0) {
-      sql = sql + " ORDER BY #{order}".interpolate({ order: this.order });
+      sql = sql + " ORDER BY #{order}".interpose({ order: this.order });
     }
 
+    // limiter
     if (this.limit) {
-      sql = sql + " LIMIT #{limit}".interpolate({ limit: this.limit });
+      sql = sql + " LIMIT #{limit}".interpose({ limit: this.limit });
     }
 
-    // reset results ??
-    this.select = [];
-    this.from = [];
-    this.where = [];
-
-    Snake.query(sql, function (transaction, results) {
-      var arr = [];
+    Snake.query(sql, params, function (transaction, results) {
+      var arr = []
+        , i = 0
+        , obj = null
+        , tmp = null
+        , prop = null;
 
       if (results.rows.length > 0) {
-        for (var i = 0; i < results.rows.length; i = i + 1) {
+        for (i = 0; i < results.rows.length; i = i + 1) {
 
-          var obj = results.rows.item(i);
-          var tmp = new window[peer.jsName];
+          obj = results.rows.item(i);
+          tmp = new window[peer.jsName]();
 
-          for (var prop in obj) {
-            tmp[prop] = obj[prop];
-            tmp['_' + prop] = obj[prop];
+          for (prop in obj) {
+            if (obj.hasOwnProperty(prop)) {
+              tmp[prop] = obj[prop];
+              tmp['$nk_' + prop] = obj[prop];
+            }
           }
 
           arr.push(tmp);
@@ -398,67 +574,84 @@ Snake.Criteria.prototype = {
     });
   },
 
-  executeInsert: function (model, peer) {
-    var values = [];
+  executeInsert: function (model, peer, onSuccess, onFailure) {
+    var values = []
+      , q = []
+      , i = 0
+      , val = null
+      , sql = "";
 
-    for (var i = 0; i < peer.columns.length; i = i + 1) {
-      if (peer.columns[i] === 'created_at') {
-        var val = Date.now();
-      } else {
-        var val = model[peer.columns[i]] || false;
+    for (i = 0; i < peer.columns.length; i = i + 1) {
+      val = model[peer.columns[i]] || null;
+
+      if (peer.columns[i] === 'created_at' && val === null) {
+        val = Date.now();
       }
 
-      val = val ? "'" + val + "'" : "NULL"; // TODO no quotes if integer...
       values.push(val);
+      q.push("?");
     }
 
-    var sql = "INSERT INTO #{table} (#{columns}) VALUES (#{values})".interpolate({
+    sql = "INSERT INTO '#{table}' (#{columns}) VALUES (#{q})".interpose({
       table: peer.tableName,
       columns: peer.columns,
-      values: values
+      q: q
     });
 
-    Snake.query(sql);
+    Snake.query(sql, values, function (transaction, results) {
+      // set an ID
+      model.id = results.insertId;
+
+      if (onSuccess) {
+        onSuccess(model);
+      }
+    }, onFailure);
   },
 
   executeUpdate: function (model, peer) {
-    var conditions = [];
+    var conditions = []
+      , values = []
+      , val = null
+      , i = 0
+      , sql = "";
 
-    for (var i = 0; i < peer.columns.length; i = i + 1) {
-      var val = model[peer.columns[i]] || false;
-      val = val ? "'" + val + "'" : "NULL";
+    for (i = 0; i < peer.columns.length; i = i + 1) {
+      if (model[peer.columns[i]] !== model['$nk_' + peer.columns[i]]) {
+        val = model[peer.columns[i]] || null;
+        values.push(val);
 
-      if (model[peer.columns[i]] !== model['_' + peer.columns[i]]) {
-        conditions.push(peer.columns[i] + " = " + val);
+        conditions.push(peer.columns[i] + " = ?");
       }
     }
 
-    var sql = "UPDATE #{table} SET #{conditions} WHERE id = #{id}".interpolate({
+    sql = "UPDATE #{table} SET #{conditions} WHERE id = #{id}".interpose({
       table: peer.tableName,
       conditions: conditions,
       id: model.id
     });
 
-    Snake.query(sql);
+    Snake.query(sql, values);
   },
 
   executeDelete: function (peer) {
+    var sql = ""
+      , where = ""
+      , params = null;
+
     this.from = peer.tableName;  
 
     // build select
-    var sql = "DELETE FROM #{from}".interpolate({
+    sql = "DELETE FROM #{from}".interpose({
       from: this.from
     });
 
     // where
-    if (this.where.length > 0) {
-      sql = sql + " WHERE #{where}".interpolate({ where: this.where });
+    if (this.where.hasWhere) {
+      where = this.where.and.join(" AND ");
+      sql = sql + " WHERE " + where;
+      params = this.where.params;
     }
 
-    // reset results
-    this.from = [];
-    this.where = [];
-
-    console.log(sql);
+    Snake.query(sql, params);
   }
 };
