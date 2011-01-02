@@ -110,7 +110,7 @@ DreamsAssistant.prototype = {
   activate: function (event) {
     // load dreams into items model
     if (!DreamsDB.locked) {
-      DreamPeer.retrieveLatest(this.updateDreams.bind(this)); // TODO make this function
+      DreamsDB.retrieveLatest(this.updateDreams.bind(this)); // TODO make this function
 
       // to add to DreamPeer
 /*
@@ -161,13 +161,9 @@ DreamsAssistant.prototype = {
   },
 
   deleteDream: function (event) {
-    for (var i = 0; i < DreamsDB.dreams.length; i = i + 1) {
-      if (event.item.id === DreamsDB.dreams[i].id) {
-        DreamsDB.dreams.splice(i, 1);
-        DreamsDB.save();
-        break;
-      }
-    }
+    var c = new Snake.Criteria();
+    c.add(DreamPeer.ID, event.item.id);
+    DreamPeer.doDelete(c);
   },
 
   handleCommand: function (event) {
@@ -180,7 +176,7 @@ DreamsAssistant.prototype = {
         var text = [], i;
 
         for (i = 0; i < DreamsDB.dreams.length; i = i + 1) {
-          text.push(DreamsDB.dreams[i].date_format + "<br />----<br />" + DreamsDB.dreams[i].dream);
+          text.push(DreamsDB.dreams[i].dream_date + "<br />----<br />" + DreamsDB.dreams[i].summary);
         }
 
         this.controller.serviceRequest("palm://com.palm.applicationManager", {

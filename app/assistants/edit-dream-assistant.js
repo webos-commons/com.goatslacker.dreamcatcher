@@ -87,7 +87,7 @@ EditDreamAssistant.prototype = {
       //tags: this.controller.get('txtTags').mojo.getValue().split(" ")
 
       // format the date
-      var dateObj = new Date(dream.timestamp)
+      var dateObj = new Date(this.dream.created_at)
         , date_format
         , month = (dateObj.getMonth() + 1)
         , day = dateObj.getDate()

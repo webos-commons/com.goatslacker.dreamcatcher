@@ -285,6 +285,12 @@ var DreamsDB = {
         ds.save();
       }
     }
+  },
+
+  retrieveLatest: function (callback) {
+    var c = new Snake.Criteria();
+    c.addDescendingOrderByColumn(DreamPeer.ID);
+    DreamPeer.doSelect(c, callback);
   }
 
 };

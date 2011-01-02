@@ -6,6 +6,7 @@
   { "source": "app/models/dreams.js" },
   { "source": "app/models/dreamcatcher.js" },
   { "source": "app/models/stemmer.js" },
+  { "scenes": "splash", "source": "app/assistants/splash-assistant.js" },
   { "scenes": "help", "source": "app/assistants/help-assistant.js" },
   { "scenes": "prefs", "source": "app/assistants/prefs-assistant.js" },
   { "scenes": "password", "source": "app/assistants/password-assistant.js" },
