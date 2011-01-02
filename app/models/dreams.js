@@ -81,12 +81,16 @@ var DreamsDB = {
       , j = 0
       , tag = null;
 
+    this.dreams = [];
+
     for (i = 0; i < dreams.length; i = i + 1) {
       dream = new Dream();
       dream.title = dreams[i].title;
       dream.summary = dreams[i].dream;
       dream.dream_date = dreams[i].date_format;
       dream.created_at = dreams[i].timestamp;
+
+      this.dreams.push(dream);
 
       dream.save((function (i, model) {
         if (dreams[i].tags.length > 0) {
@@ -110,14 +114,8 @@ var DreamsDB = {
       }).bind(this, i));
     }
 
-
-    // TODO REVISE THIS SECTION!
-    // make sure there are no errors and then dump the database
-    this.dreams = {};
-    this.database.add('dreams', this.dreams);
-    // if there are errors, then what?
-
-    this.dreams = dreams;
+    // dump the old database
+    this.database.add('dreams', null);
 
     // set in prefs that we're not using depot anymore
     this.prefs.noDepot = true;

@@ -21,11 +21,11 @@ EditDreamAssistant.prototype = {
   setup: function () {
     // TODO fix the model variables and database schema and add the tags!!!!!!
     // defaults
-    this.dream.dream = this.dream.dream || "";
+    this.dream.summary = this.dream.summary || "";
     this.dream.title = this.dream.title || "";
-    //this.dream.tags = this.dream.tags || [];
-    this.dream.timestamp = this.dream.timestamp || Date.now();
-    this.models.datePicker.date = new Date(this.dream.timestamp);
+    this.dream.tags = this.dream.tags || []; // TODO
+    this.dream.created_at = this.dream.created_at || Date.now();
+    this.models.datePicker.date = new Date(this.dream.created_at);
 
     // Menus
     this.controller.setupWidget(Mojo.Menu.appMenu, { richTextEditMenu: true }, null);
@@ -48,6 +48,7 @@ EditDreamAssistant.prototype = {
     }); 
  
     // tags
+/*
     this.controller.setupWidget("txtTags", {
       hintText: $L("Tags..."),
       multiline: false,
@@ -57,10 +58,11 @@ EditDreamAssistant.prototype = {
       value: this.dream.tags.join(" "),
       disabled: false
     });
+*/
 
     // dream
     this.controller.setupWidget("richDream", { }, { });
-    this.controller.get('richDream').innerHTML = this.dream.dream;
+    this.controller.get('richDream').innerHTML = this.dream.summary;
 
     // handlers
     this.handlers.deactivate = this.deactivateWindow.bind(this);
@@ -77,6 +79,7 @@ EditDreamAssistant.prototype = {
 
   save: function () {
     if (this.controller && this.controller.get('richDream').innerHTML != "") {
+
       this.dream.summary = this.controller.get('richDream').innerHTML;
       this.dream.title = this.controller.get('txtTitle').mojo.getValue();
       this.dream.created_at = this.models.datePicker.date.getTime();
@@ -95,13 +98,15 @@ EditDreamAssistant.prototype = {
       day = (day > 9) ? day : "0" + day;
       date_format = month.toString() + day.toString() + year.toString();
 
-      this.dream.date_format = date_format;
+      this.dream.dream_date = date_format;
 
       // add to the dreamcatcher
-      this.dream.save();
+      var dream = new Dream();
+      dream.hydrate(this.dream);
+      dream.save();
 
       // update the index
-      this.dream.updateSearchIndex();
+      DreamsDB.updateSearchIndex(dream);
 
       // notify the awake
       Mojo.Controller.getAppController().showBanner("Dream saved", { 

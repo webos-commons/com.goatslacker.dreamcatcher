@@ -26,12 +26,12 @@ SplashAssistant.prototype = {
       if (DreamsDB.prefs.noDepot === false) {
 
         // prompt user that they are upgrading their data!
-        this.controller.errorDialog("Dreamcatcher will be upgrading it's data to the latest version. This may take a minute or two.");
+        this.controller.errorDialog("Dreamcatcher will be upgrading it's data to the latest version. This may take a minute or two. Do not close or restart the app until the data transfer has completed");
 
         // show scrim with spinner or status messages...???
 
         DreamsDB.deprecate((function () {
-          this.controller.errorDialog("Done. Dreamcatcher is now up-to-date. Enjoy the new Search features!");
+          this.controller.errorDialog("Done merging data. Dreamcatcher is now up-to-date. Enjoy the new Search features!");
 
           // apply the user preferences from ealier, unlock the app, and move on...
           this.updatePrefs(prefs);

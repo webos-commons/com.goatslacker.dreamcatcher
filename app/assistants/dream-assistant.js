@@ -29,7 +29,7 @@ DreamAssistant.prototype = {
     this.controller.get('my-dream').update(info);
 
     // put the dream in the box
-    this.controller.get('myDream').innerHTML = this.dream.dream;
+    this.controller.get('myDream').innerHTML = this.dream.summary;
   },
 
   handleCommand: function(event) {
@@ -44,8 +44,8 @@ DreamAssistant.prototype = {
           parameters: { 
             id: "com.palm.app.email",
             params: {
-              summary: "Dreamcatcher - " + this.dream.date_format,
-              text: this.dream.dream
+              summary: "Dreamcatcher - " + this.dream.dream_date,
+              text: this.dream.summary
             }
           }
         });
