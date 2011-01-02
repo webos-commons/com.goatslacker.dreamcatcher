@@ -1,4 +1,6 @@
-function DreamsAssistant () { }
+function DreamsAssistant () {
+  this.dreams = [];
+}
 
 DreamsAssistant.prototype = {
 
@@ -78,6 +80,10 @@ DreamsAssistant.prototype = {
   },
 
   updateDreams: function (dreams) {
+    if (this.dreams.length > 0) {
+      this.controller.get('dreams').mojo.noticeRemovedItems(0, this.dreams.length);
+    }
+
     this.dreams = dreams;
 
     if (this.controller) {

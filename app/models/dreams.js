@@ -155,17 +155,18 @@ var DreamsDB = {
     if (words.length > 1) {
 
       // we need to execute two queries, one for the entire term stemmed and replaced and then the loop of words
-      phrase = stemmer(search_term.replace(/[^a-zA-Z 0-9]+/g,''));
+      phrase = stemmer(search_term.toLowerCase().replace(/[^a-zA-Z 0-9]+/g,''));
     }
 
     // single words
     for (i = 0; i < words.length; i = i + 1) {
-      stemmed_words.push(stemmer(words[i].replace(/[^a-zA-Z 0-9]+/g,'')));
+      stemmed_words.push(stemmer(words[i].toLowerCase().replace(/[^a-zA-Z 0-9]+/g,'')));
       q.push("?");
     }
 
     // custom query
-    query = "SELECT dream_id, COUNT(*) AS nb, SUM(weight) AS total_weight, dream.id, dream.title, dream.summary, dream.dream_date, dream.created_at FROM dream_search, dream WHERE dream_id = dream.id AND stem IN (#{words}) GROUP BY dream_id ORDER BY nb DESC, total_weight DESC";
+    query = "SELECT COUNT(*) AS nb, SUM(weight) AS total_weight, dream.id, dream.title, dream.summary, dream.dream_date, dream.created_at FROM dream_search, dream WHERE dream_id = dream.id AND stem IN (#{words}) GROUP BY dream.id ORDER BY nb DESC, total_weight DESC";
+    phrase = false;
 
     if (phrase !== false) {
       // run first query and the mix with second set of results
@@ -181,7 +182,6 @@ var DreamsDB = {
     } else {
       // hydrates a record set
       Snake.query(query.interpolate({ words: q }), stemmed_words, Snake.hydrateRS.bind(this, DreamPeer, function (dreams) {
-        dreams = dreams || [];
         callback(dreams);
       }));
     }
