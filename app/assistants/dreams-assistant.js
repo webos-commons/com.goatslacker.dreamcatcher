@@ -7,10 +7,14 @@ DreamsAssistant.prototype = {
   models: {
     cmdMenu: {
       items: [
-        {},{}, {
+        {
+          items: [
+            { label: "Sort", submenu: "submenu-sort" } // TODO - needs icon
+          ]
+        },{}, {
           items: [
             { icon: "new", command: "dream" },
-            { icon: "sync", command: "send" }
+            { icon: "sync", submenu: "submenu-sync" }
           ]
         }
       ]
@@ -21,12 +25,17 @@ DreamsAssistant.prototype = {
     spinner: {
       spinning: true
     },
-    sort: {
-      choices: [ 
-        { label: "Date Asc", value: 1 }, 
-        { label: "Date Desc", value: 2 }
-      ], 
-      value: 1
+    syncMenu: {
+      items: [ 
+        { label: "Email as Text", command: "sendtxt" }, 
+        { label: "Email as JSON", command: "sendjson" }
+      ]
+    },
+    sortMenu: {
+      items: [ 
+        { label: "Date Asc", command: "sortasc" }, 
+        { label: "Date Desc", command: "sortdesc" }
+      ]
     }
   },
   handlers: { },
@@ -36,6 +45,8 @@ DreamsAssistant.prototype = {
     // Menus
     // ======================================  
 
+    this.controller.setupWidget("submenu-sort", {}, this.models.sortMenu);
+    this.controller.setupWidget("submenu-sync", {}, this.models.syncMenu);
     this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, DreamsDB.appMenu);
     this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.models.cmdMenu);
 
@@ -155,29 +166,63 @@ DreamsAssistant.prototype = {
     }
   },
 
+  backupData: function (json_format) {
+    json_format = json_format || false;
+
+    var tmp = []
+      , i = 0
+      , dreams = "";
+
+    if (json_format) {
+      json_format = {};
+      for (i = 0; i < this.dreams.length; i = i + 1) {
+        json_format.title = this.dreams[i].title;
+        json_format.summary = this.dreams[i].summary;
+        json_format.dream_date = this.dreams[i].dream_date;
+        json_format.created_at = this.dreams[i].dream_date;
+
+        tmp.push(json_format);
+      }
+
+      dreams = Object.toJSON(tmp);
+    } else {
+
+      for (i = 0; i < this.dreams.length; i = i + 1) {
+        tmp.push(this.dreams[i].dream_date + "<br />----<br />" + this.dreams[i].summary);
+      }
+
+      dreams = tmp.join("<br /><br />");
+    }
+
+    this.controller.serviceRequest("palm://com.palm.applicationManager", {
+      method: "open",
+      parameters: { 
+        id: "com.palm.app.email",
+        params: {
+          summary: "Dreamcatcher Backup",
+          text: dreams
+        }
+      }
+    });
+  },
+
   handleCommand: function (event) {
     if (event.type === Mojo.Event.command) {
       switch (event.command) {
       case "dream":
         this.addDream();
         break;
-      case "send":
-        var text = [], i;
-
-        for (i = 0; i < this.dreams.length; i = i + 1) {
-          text.push(this.dreams[i].dream_date + "<br />----<br />" + this.dreams[i].summary);
-        }
-
-        this.controller.serviceRequest("palm://com.palm.applicationManager", {
-          method: "open",
-          parameters: { 
-            id: "com.palm.app.email",
-            params: {
-              summary: "Dreamcatcher Backup",
-              text: text.join("<br /><br />") 
-            }
-          }
-        });
+      case "sortasc":
+        DreamsDB.retrieveLatest(this.updateDreams.bind(this), true);
+        break;
+      case "sortdesc":
+        DreamsDB.retrieveLatest(this.updateDreams.bind(this));
+        break;
+      case "sendtxt":
+        this.backupData(false);
+        break;
+      case "sendjson":
+        this.backupData(true);
         break;
       case "refresh":
         DreamsDB.retrieveLatest(this.updateDreams.bind(this));

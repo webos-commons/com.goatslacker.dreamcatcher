@@ -297,9 +297,15 @@ var DreamsDB = {
     }
   },
 
-  retrieveLatest: function (callback) {
+  retrieveLatest: function (callback, asc) {
+    asc = asc || false;
+
     var c = new Snake.Criteria();
-    c.addDescendingOrderByColumn(DreamPeer.ID);
+    if (asc) {
+      c.addAscendingOrderByColumn(DreamPeer.CREATED_AT);
+    } else {
+      c.addDescendingOrderByColumn(DreamPeer.CREATED_AT);
+    }
     DreamPeer.doSelect(c, callback);
   }
 
