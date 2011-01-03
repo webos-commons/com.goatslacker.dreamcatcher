@@ -1,4 +1,3 @@
-/* TODO: put your application-specific CSS here */
 body {
   color: black;
 }
@@ -38,7 +37,8 @@ body {
 }
 
 .palm-dark .dream-show {
-  background-color: #4d4d4d;
+  background-color: #000;
+  opacity: 0.75;
 }
 
 #appVersion {
@@ -65,21 +65,16 @@ body {
 
 .opaque {
   background-color: #d4d4d4;
-  -webkit-border-radius: 15px;
   opacity: 0.6;
-}
-
-.palm-dark .opaque {
-  background-color: #4d4d4d;
 }
 
 .not-opaque {
   background-color: #d4d4d4;
-  -webkit-border-radius: 15px;
 }
 
-.palm-dark .not-opaque {
-  background-color: #4d4d4d;
+.palm-dark .opaque, .palm-dark .not-opaque {
+  background-color: #000;
+  opacity: 0.75;
 }
 
 .palm-text-wrapper { padding: 0; }
