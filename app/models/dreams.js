@@ -55,76 +55,84 @@ var DreamsDB = {
     }
   },
 
-  deprecate: function (callback) {
-    // add
-    if (this.prefs.noDepot === false) {
-
-      if (this.dreams.length === 0) {
-        this.database.get('dreams', (function (data) {
-          if (data) {
-            this.dreams = data;
-          }
-          this._deprecate(this.dreams, callback);
-        }).bind(this));
-      } else {
-        this._deprecate(this.dreams, callback);
-      }
-
+  deprecate: function (controller, onDeprecateSuccess, onNoDeprecate) {
+    if (this.dreams.length === 0) {
+      this.database.get('dreams', (function (data) {
+        if (data) {
+          this.dreams = data;
+          this._deprecate(this.dreams, controller, onDeprecateSuccess);
+        } else {
+          onNoDeprecate();
+        }
+      }).bind(this));
+    } else {
+      this._deprecate(this.dreams, controller, onDeprecateSuccess);
     }
   },
 
-  _deprecate: function (dreams, callback) {
-    var dream = null
-      , i = 0
-      , tags = []
-      , j = 0
-      , tag = null;
+  _deprecate: function (dreams, controller, callback) {
 
-    this.dreams = [];
+    controller.showAlertDialog({
+      onChoose: (function () {
 
-    for (i = 0; i < dreams.length; i = i + 1) {
-      dream = new Dream();
-      dream.title = dreams[i].title;
-      dream.summary = dreams[i].dream;
-      dream.dream_date = dreams[i].date_format;
-      dream.created_at = dreams[i].timestamp;
+        var dream = null
+          , i = 0
+          , tags = []
+          , j = 0
+          , tag = null;
 
-      this.dreams.push(dream);
+        this.dreams = [];
 
-      dream.save((function (i, model) {
-        if (dreams[i].tags.length > 0) {
+        for (i = 0; i < dreams.length; i = i + 1) {
+          dream = new Dream();
+          dream.title = dreams[i].title;
+          dream.summary = dreams[i].dream;
+          dream.dream_date = dreams[i].date_format;
+          dream.created_at = dreams[i].timestamp;
 
-          tags = [];
+          this.dreams.push(dream);
 
-          for (j = 0; j < dreams[i].tags.length; j = j + 1) {
-            tag = new DreamTag();
-            tag.dream_id = model.id;
-            tag.tag = dreams[i].tags[j].replace(/[^a-zA-Z 0-9]+/g,'');
-            tag.normalized = tag.tag.toLowerCase().split(" ").join("-");
+          dream.save((function (i, model) {
+            if (dreams[i].tags.length > 0) {
 
-            if (tag.tag) {
-              tag.save();
-              tags.push(tag.tag);
+              tags = [];
+
+              for (j = 0; j < dreams[i].tags.length; j = j + 1) {
+                tag = new DreamTag();
+                tag.dream_id = model.id;
+                tag.tag = dreams[i].tags[j].replace(/[^a-zA-Z 0-9]+/g,'');
+                tag.normalized = tag.tag.toLowerCase().split(" ").join("-");
+
+                if (tag.tag) {
+                  tag.save();
+                  tags.push(tag.tag);
+                }
+              }
+
+              model.tags = tags;
             }
-          }
 
-          model.tags = tags;
+            this.updateSearchIndex(model); 
+          }).bind(this, i));
         }
 
-        this.updateSearchIndex(model); 
-      }).bind(this, i));
-    }
+        // dump the old database
+        this.database.add('dreams', null);
 
-    // dump the old database
-    this.database.add('dreams', null);
+        // set in prefs that we're not using depot anymore
+        this.prefs.noDepot = true;
+        this.savePrefs();
 
-    // set in prefs that we're not using depot anymore
-    this.prefs.noDepot = true;
-    this.savePrefs();
+        if (callback) {
+          callback();
+        }
 
-    if (callback) {
-      callback();
-    }
+      }).bind(this),
+      title: "Upgrading Application",
+      message: "Dreamcatcher needs a minute or two to sort your dreams for the new search features. Do not close or restart the app until the process has completed.",
+      choices:[{ label: "Continue", value:"cancel", type:'affirmative'}]
+    });
+
   },
 
   loadPrefs: function (onSuccess, onFailure) {
