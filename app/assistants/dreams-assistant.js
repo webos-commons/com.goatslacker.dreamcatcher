@@ -139,7 +139,11 @@ DreamsAssistant.prototype = {
   },
 
   doSearch: function (event) {
-    DreamsDB.doSearch(event.value, this.updateDreams.bind(this));
+    if (event.value) {
+      DreamsDB.doSearch(event.value, this.updateDreams.bind(this));
+    } else {
+      DreamsDB.retrieveLatest(this.updateDreams.bind(this));
+    }
   },
 
   handleCommand: function (event) {
