@@ -55,9 +55,9 @@ DreamsAssistant.prototype = {
     this.controller.setupWidget("searchr", {
       enterSubmits: true,
       preventResize: true,
-      requiresEnterKey: true
+      requiresEnterKey: true,
+      hintText: "Search your dreams"
     }, { value: null });
-    //this.controller.get("search").hide();
 
 /*
     // sort

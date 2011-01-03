@@ -103,14 +103,14 @@ EditDreamAssistant.prototype = {
       // add to the dreamcatcher
       var dream = new Dream();
       dream.hydrate(this.dream);
-      dream.save();
+      dream.save(function (dream) {
+        // update the index
+        DreamsDB.updateSearchIndex(dream);
 
-      // update the index
-      DreamsDB.updateSearchIndex(dream);
-
-      // notify the awake
-      Mojo.Controller.getAppController().showBanner("Dream saved", { 
-        source: 'notification' 
+        // notify the awake
+        Mojo.Controller.getAppController().showBanner("Dream saved", { 
+          source: 'notification' 
+        });
       });
     }
   },

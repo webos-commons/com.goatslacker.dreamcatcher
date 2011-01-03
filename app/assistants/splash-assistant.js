@@ -111,7 +111,7 @@ SplashAssistant.prototype = {
 
   unlock: function () {
     DreamsDB.locked = false;
-    Mojo.Controller.stageController.pushScene({ name: "dreams" });
+    Mojo.Controller.stageController.swapScene({ name: "dreams" });
   }
 
 };
