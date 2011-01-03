@@ -136,6 +136,15 @@ DreamsAssistant.prototype = {
     var c = new Snake.Criteria();
     c.add(DreamPeer.ID, event.item.id);
     DreamPeer.doDelete(c);
+
+    // cascade
+    c = new Snake.Criteria();
+    c.add(DreamSearchPeer.DREAM_ID, event.item.id);
+    DreamSearchPeer.doDelete(c);
+
+    c = new Snake.Criteria();
+    c.add(DreamTagPeer.DREAM_ID, event.item.id);
+    DreamTagPeer.doDelete(c);
   },
 
   doSearch: function (event) {
