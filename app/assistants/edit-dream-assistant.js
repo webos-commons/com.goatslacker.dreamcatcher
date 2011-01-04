@@ -19,7 +19,6 @@ EditDreamAssistant.prototype = {
   handlers: { },
 
   setup: function () {
-    // TODO fix the model variables and database schema and add the tags!!!!!!
     // defaults
     this.dream.summary = this.dream.summary || "";
     this.dream.title = this.dream.title || "";

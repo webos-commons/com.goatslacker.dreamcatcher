@@ -9,7 +9,7 @@ DreamsAssistant.prototype = {
       items: [
         {
           items: [
-            { label: "Sort", submenu: "submenu-sort" } // TODO - needs icon
+            { icon: "sort-icon", submenu: "submenu-sort" }
           ]
         },{}, {
           items: [

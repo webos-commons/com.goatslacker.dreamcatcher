@@ -38,7 +38,7 @@ DreamAssistant.prototype = {
       case "edit":
         Mojo.Controller.stageController.swapScene({ name: "edit-dream" }, this.dream);
         break;
-      case "send":
+      case "send": // TODO send as single JSON
         this.controller.serviceRequest("palm://com.palm.applicationManager", {
           method: "open",
           parameters: { 
