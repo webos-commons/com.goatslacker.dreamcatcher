@@ -47,7 +47,7 @@ EditDreamAssistant.prototype = {
       disabled: false
     }); 
  
-    // tags
+    // tags TODO
 /*
     this.controller.setupWidget("txtTags", {
       hintText: $L("Tags..."),
@@ -101,9 +101,7 @@ EditDreamAssistant.prototype = {
       this.dream.dream_date = date_format;
 
       // add to the dreamcatcher
-      var dream = new Dream();
-      dream.hydrate(this.dream);
-      dream.save(function (dream) {
+      this.dream.save(function (dream) {
         // update the index
         DreamsDB.updateSearchIndex(dream);
 
