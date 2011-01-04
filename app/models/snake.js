@@ -3,7 +3,7 @@
 
 // base object
 var Snake = {
-  version: "0.0.21",
+  version: "0.0.22",
   $nk_chain: [],
   db: false,
   config: {},
@@ -119,7 +119,7 @@ Snake.init = function (o) {
   var self = Snake;  
 
   if (!o) {
-    Mojo.Log.error("Error, configuration file not loaded");
+    console.log("Error, configuration file not loaded");
     return false;
   }
 
@@ -131,7 +131,7 @@ Snake.init = function (o) {
   self.connect(function () {
     self.insertSql();
   }, function (errorText) {
-    Mojo.Log.error(errorText);
+    console.log(errorText);
   });
 };
 
@@ -193,16 +193,16 @@ Snake.query = function (query, params, onSuccess, onFailure) {
   params = params || null;
 
   onSuccess = onSuccess || function (transaction, results) {
-    Mojo.Log.error(transaction);
-    Mojo.Log.error(results);
+    console.log(transaction);
+    console.log(results);
   };
   onFailure = onFailure || function (transaction, error) {
-    Mojo.Log.error(transaction);
-    Mojo.Log.error(error);
+    console.log(transaction);
+    console.log(error);
   };
 
   if (!self.db) {
-    Mojo.Log.error("Database not connected");
+    console.log("Database not connected");
     return false;
   } else {
   
@@ -214,9 +214,9 @@ Snake.query = function (query, params, onSuccess, onFailure) {
 
       // debugging
       if (self.debug) {
-        Mojo.Log.error(query);
+        console.log(query);
         if (params) {
-          Mojo.Log.error(params);
+          console.log(params);
         }
       }
 
@@ -370,7 +370,7 @@ Snake.BasePeer.prototype = {
     if (model.id === null) {
       criteria.executeInsert(model, this, onSuccess, onFailure);
     } else {
-      criteria.executeUpdate(model, this);
+      criteria.executeUpdate(model, this, onSuccess, onFailure);
     }
   },
 
@@ -605,7 +605,7 @@ Snake.Criteria.prototype = {
     }, onFailure);
   },
 
-  executeUpdate: function (model, peer) {
+  executeUpdate: function (model, peer, onSuccess, onFailure) {
     var conditions = []
       , values = []
       , val = null
@@ -627,7 +627,7 @@ Snake.Criteria.prototype = {
       id: model.id
     });
 
-    Snake.query(sql, values);
+    Snake.query(sql, values, onSuccess, onFailure);
   },
 
   executeDelete: function (peer) {
