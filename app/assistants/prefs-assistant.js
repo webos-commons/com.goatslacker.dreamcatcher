@@ -2,6 +2,17 @@ function PrefsAssistant () { }
 
 PrefsAssistant.prototype = {
   models: { 
+    importJSON: {
+      label: "Import JSON",
+      disabled: false
+    },
+    
+    deleteAll: {
+      label: "Delete All",
+      buttonClass: "negative",
+      disabled: false
+    },
+
     themeSelector: {
       value: DreamsDB.prefs.theme,
       disabled: false,
@@ -50,6 +61,10 @@ PrefsAssistant.prototype = {
     // Widgets
     // ======================================  
 
+    // import
+    this.controller.setupWidget('importJSON', { }, this.models.importJSON);
+    this.controller.setupWidget('deleteAll', { }, this.models.deleteAll);
+
     // theme
     this.controller.setupWidget('themeSelector', {
       labelPlacement: Mojo.Widget.labelPlacementLeft,
@@ -97,7 +112,8 @@ PrefsAssistant.prototype = {
       theme: this.themeUpdate.bind(this),
       alwaysOn: this.alwaysOnUpdate.bind(this),
       brightness: this.brightnessUpdate.bind(this),
-      backgroundPicker: this.backgroundPickerHandler.bind(this)
+      backgroundPicker: this.backgroundPickerHandler.bind(this),
+      deleteAll: this.truncateDB.bind(this)
     }
   },
 
@@ -111,6 +127,7 @@ PrefsAssistant.prototype = {
     Mojo.Event.listen(this.controller.get("brightnessSlider"), Mojo.Event.propertyChange, this.handlers.brightness);
     Mojo.Event.listen(this.controller.get("backgroundPicker"), Mojo.Event.tap, this.handlers.backgroundPicker);
     Mojo.Event.listen(this.controller.stageController.document, Mojo.Event.stageDeactivate, this.handlers.deactivate);
+    Mojo.Event.listen(this.controller.get("deleteAll"), Mojo.Event.tap, this.handlers.deleteAll);
   },
 
   deactivate: function (event) {
@@ -122,6 +139,7 @@ PrefsAssistant.prototype = {
     Mojo.Event.stopListening(this.controller.get("brightnessSlider"), Mojo.Event.propertyChange, this.handlers.brightness);
     Mojo.Event.stopListening(this.controller.get("backgroundPicker"), Mojo.Event.tap, this.handlers.backgroundPicker);
     Mojo.Event.stopListening(this.controller.stageController.document, Mojo.Event.stageDeactivate, this.handlers.deactivate);
+    Mojo.Event.stopListening(this.controller.get("deleteAll"), Mojo.Event.tap, this.handlers.deleteAll);
   },
 
   deactivateWindow: function (event) {
@@ -183,5 +201,24 @@ PrefsAssistant.prototype = {
       blockScreenTimeout: event.value
     });
     DreamsDB.prefs.alwaysOn = event.value;
+  },
+
+  truncateDB: function () {
+    this.controller.showAlertDialog({
+      onChoose: function (value) {
+        if (value === true) {
+          DreamPeer.doDelete(new Snake.Criteria(), function () {
+            Mojo.Controller.errorDialog("Data has been deleted");
+          });
+        }
+      },
+      title: "Are you sure",
+      message: "This will erase all the data stored on the device. Are you sure you wish to continue?",
+      choices: [
+        { label: "Yes, Continue", value: true, type: "negative" },
+        { label: "Nevermind", value: "cancel", type: "dismiss" }
+      ]
+    }); 
   }
+
 };
