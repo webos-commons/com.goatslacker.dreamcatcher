@@ -36,6 +36,9 @@ DreamsAssistant.prototype = {
         { label: "Date Asc", command: "sortasc" }, 
         { label: "Date Desc", command: "sortdesc" }
       ]
+    },
+    search: {
+      value: DreamsDB.curQuery
     }
   },
   handlers: { },
@@ -68,7 +71,7 @@ DreamsAssistant.prototype = {
       preventResize: true,
       requiresEnterKey: true,
       hintText: "Search your dreams"
-    }, { value: null });
+    }, this.models.search);
 
 /*
     // sort
@@ -106,13 +109,15 @@ DreamsAssistant.prototype = {
     }
   },
 
-  sortDreams: function (event) {
-  },
-
   activate: function (event) {
     // load dreams into items model
     if (!DreamsDB.locked) {
-      DreamsDB.retrieveLatest(this.updateDreams.bind(this));
+
+      if (DreamsDB.curQuery) {
+        this.doSearch({ value: DreamsDB.curQuery });   
+      } else {
+        DreamsDB.retrieveLatest(this.updateDreams.bind(this));
+      }
 
       // ======================================  
       // Listeners
@@ -159,11 +164,15 @@ DreamsAssistant.prototype = {
   },
 
   doSearch: function (event) {
+    event.value = event.value || null;
+
     if (event.value) {
       DreamsDB.doSearch(event.value, this.updateDreams.bind(this));
     } else {
       DreamsDB.retrieveLatest(this.updateDreams.bind(this));
     }
+
+    DreamsDB.curQuery = event.value;
   },
 
   backupData: function (json_format) {
@@ -228,6 +237,14 @@ DreamsAssistant.prototype = {
       case "refresh":
         DreamsDB.retrieveLatest(this.updateDreams.bind(this));
         break;
+      }
+    } else if (event.type === Mojo.Event.back) {
+      if (DreamsDB.curQuery) {
+        DreamsDB.curQuery = null;
+        this.controller.get('searchr').mojo.setValue("");
+        this.doSearch({ value: DreamsDB.curQuery });
+        event.stop();
+        event.stopPropagation();
       }
     }
   }

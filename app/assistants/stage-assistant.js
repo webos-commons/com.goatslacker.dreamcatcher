@@ -7,6 +7,13 @@ StageAssistant.prototype.setup = function () {
   Mojo.Controller.stageController.pushScene({ name: "splash" });
 };
 
+// webOS 2.0
+StageAssistant.prototype.handleLaunch = function (params) {
+  if (typeof params.search === "string") {
+    DreamsDB.curQuery = params.search;
+  }
+};
+
 StageAssistant.prototype.handleCommand = function (event) {
   if (event.type === Mojo.Event.command) {
     var scenes = Mojo.Controller.stageController.getScenes(), topScene = scenes[scenes.length - 1];

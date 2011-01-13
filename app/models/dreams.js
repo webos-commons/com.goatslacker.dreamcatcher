@@ -20,6 +20,8 @@ var DreamsDB = {
     noDepot: false
   },
 
+  curQuery: null,
+
 /* App */
 
   appMenu: {
