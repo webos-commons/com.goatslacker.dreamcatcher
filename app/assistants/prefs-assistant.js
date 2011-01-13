@@ -67,8 +67,8 @@ PrefsAssistant.prototype = {
     // Widgets
     // ======================================  
 
-    // import
-    this.controller.setupWidget('importJSON', { }, this.models.importJSON);
+    // data management
+    //this.controller.setupWidget('importJSON', { }, this.models.importJSON);
     this.controller.setupWidget('deleteAll', { }, this.models.deleteAll);
 
     // theme
