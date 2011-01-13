@@ -1,3 +1,15 @@
+// App Controller
+function AppAssistant () {
+}
+
+// webOS 2.0
+AppAssistant.prototype.handleLaunch = function (params) {
+  if (typeof params.search === "string") {
+    DreamsDB.curQuery = params.search;
+  }
+};
+
+// Stage Controller
 function StageAssistant () {
 	/* this is the creator function for your stage assistant object */
 }
@@ -5,13 +17,6 @@ function StageAssistant () {
 StageAssistant.prototype.setup = function () {
 	/* this function is for setup tasks that have to happen when the stage is first created */
   Mojo.Controller.stageController.pushScene({ name: "splash" });
-};
-
-// webOS 2.0
-StageAssistant.prototype.handleLaunch = function (params) {
-  if (typeof params.search === "string") {
-    DreamsDB.curQuery = params.search;
-  }
 };
 
 StageAssistant.prototype.handleCommand = function (event) {
