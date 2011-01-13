@@ -85,7 +85,8 @@ PrefsAssistant.prototype = {
   
     // TODO need an info button thingy that displays why I need email address
     this.controller.setupWidget("passwordEmail", {
-      hintText: "Email Address" 
+      hintText: "Email Address",
+      textCase: Mojo.Widget.steModeLowerCase
     }, this.models.passwordEmail);
 
     this.controller.setupWidget("passwordLock", { 

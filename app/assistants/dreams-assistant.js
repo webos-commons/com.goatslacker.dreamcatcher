@@ -174,8 +174,9 @@ DreamsAssistant.prototype = {
       , dreams = "";
 
     if (json_format) {
-      json_format = {};
       for (i = 0; i < this.dreams.length; i = i + 1) {
+        json_format = {};
+
         json_format.title = this.dreams[i].title;
         json_format.summary = this.dreams[i].summary;
         json_format.dream_date = this.dreams[i].dream_date;

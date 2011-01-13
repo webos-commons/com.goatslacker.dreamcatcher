@@ -26,11 +26,11 @@ PasswordAssistant.prototype = {
 
     // widgets
     this.controller.setupWidget("passwordField", { 
-      hintText: "Type Password" 
+      hintText: "Type Password",
+      enterSubmits: true
     }, this.models.passwordField);
 
-    this.controller.setupWidget("signIn", {
-    }, this.models.signIn);
+    this.controller.setupWidget("signIn", { }, this.models.signIn);
 
     // handlers
     this.handlers.login = this.logIn.bind(this);
