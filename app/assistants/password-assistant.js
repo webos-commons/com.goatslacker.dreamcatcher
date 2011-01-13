@@ -61,7 +61,18 @@ PasswordAssistant.prototype = {
   },
 
   resetPassword: function () {
-    DreamsDB.prefs.password = "dr34m";
+    var i = 0
+      , key = "";
+
+    if (DreamsDB.prefs.email) {
+      for (i = 0; i < 8; i = i + 1) {
+        key = key + String.fromCharCode(Math.ceil((Math.random() * 74) + 48));
+      }
+    } else {
+      key = "dr34m";
+    }
+
+    DreamsDB.prefs.password = key;
   },
 
   handleCommand: function (event) {
@@ -69,21 +80,25 @@ PasswordAssistant.prototype = {
       switch (event.command) {
       case "support":
         this.resetPassword();
+
+        var contact = { };
+        contact.value = DreamsDB.prefs.email || 'josh@goatslacker.com';
+        contact.type = 'email';
+        contact.role = 1;
+
+// TODO can't send the reset email password...need to first contact a service that automatically sends it
+/*
         this.controller.serviceRequest("palm://com.palm.applicationManager", {
           method: "open",
           parameters: { 
             id: "com.palm.app.email",
             params: {
-              recipients: [{
-                contactDisplay: 'Josh Perez',
-                type: 'email',
-                role: 1,
-                value: 'josh@goatslacker.com'
-              }],
+              recipients: [contact],
               summary: "Dreamcatcher: Help, I forgot my password"
             }
           }
         });
+*/
         break;
       }
     }

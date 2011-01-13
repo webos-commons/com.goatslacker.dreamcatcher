@@ -15,6 +15,7 @@ var DreamsDB = {
     allowRotate: false,
     passwordProtect: false,
     password: "",
+    email: "",
     alwaysOn: true,
     noDepot: false
   },
