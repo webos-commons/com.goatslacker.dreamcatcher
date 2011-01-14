@@ -69,6 +69,8 @@ SplashAssistant.prototype = {
           },
           onSuccess: (function (event) {
             var wallpaperImage = "file://" + event.wallpaper.wallpaperFile;
+            DreamsDB.prefs.wallpaper = wallpaperImage;
+            DreamsDB.savePrefs();
             this.controller.get('myBodyIsYourBody').style.backgroundImage = "url('" + wallpaperImage + "')";
           }).bind(this)
         });
