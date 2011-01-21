@@ -260,7 +260,7 @@ var DreamsDB = {
       no_push = false;
     }
 
-    keywords = title.concat(title, title, n, tags, tags, tags)
+    keywords = title.concat(title, title, n, tags, tags, tags);
 
     for (i = 0; i < keywords.length; i = i + 1) {
       if (keywords[i] && keywords[i].length >= 3) {
