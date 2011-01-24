@@ -11,7 +11,12 @@ EditDreamAssistant.prototype = {
       items: [
         {},
         {},
-        { icon: "save", command: "save" }
+        { 
+          items: [
+            { label: "Tag", command: "tag" },
+            { icon: "save", command: "save" }
+          ]
+        }
       ]
     }
   },
@@ -31,13 +36,11 @@ EditDreamAssistant.prototype = {
     this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.models.cmdMenu);
 
     // date picker
-    this.controller.setupWidget("dreamDate", {
-      label: ' '
-    }, this.models.datePicker);
+    this.controller.setupWidget("dreamDate", { }, this.models.datePicker);
 
     // title (optional)
     this.controller.setupWidget("txtTitle", {
-      hintText: $L("Title (optional)"),
+      hintText: "Title (optional)...",
       multiline: false,
       enterSubmits: false,
       focus: false
@@ -60,7 +63,7 @@ EditDreamAssistant.prototype = {
 */
 
     // dream
-    this.controller.setupWidget("richDream", { }, { });
+    this.controller.setupWidget("richDream");
     this.controller.get('richDream').innerHTML = this.dream.summary;
 
     // handlers

@@ -1,44 +1,29 @@
 <div class="palm-scene">
 
-  <div class="palm-group opaque">
-    <div class="palm-group-title">Dream Description</div>
-    <div class="palm-list">
+  <div class="palm-list opaque">
 
-      <div class="palm-row single">
-        <div class="palm-row-wrapper textfield-group">
-          <div x-mojo-element="RichTextEdit" id="richDream" class="message-rte" name="richDream" style="min-height: 180px"></div>
-        </div>
+    <div class="palm-row first">
+      <div class="palm-row-wrapper textfield-group">
+        <div x-mojo-element="RichTextEdit" id="richDream" class="message-rte" name="richDream" style="min-height: 230px"></div>
       </div>
-
     </div>
-  </div>
 
-  <div class="palm-group opaque">
-    <div class="palm-group-title">Dream Information</div>
-    <div class="palm-list">
-
-      <div class="palm-row first">
-        <div class="palm-row-wrapper">
-          <div x-mojo-element="DatePicker" id="dreamDate" class="datepickerClass" name="dreamDate"></div>
+    <div class="palm-row">
+      <div class="palm-row-wrapper">
+        <div class="title datetime-picker">
+          <div x-mojo-element="DatePicker" id="dreamDate" name="dreamDate"></div>
         </div>
       </div>
+    </div>
     
-      <div class="palm-row">
-        <div class="palm-row-wrapper textfield-group">
-          <div class="title">
-            <div x-mojo-element="TextField" id="txtTitle" class="textFieldClass" name="txtTitle"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="palm-row last">
-        <div class="palm-row-wrapper textfield-group">
-          <div class="title">
-            <div x-mojo-element="TextField" id="txtTags" class="textFieldClass" name="txtTags"></div>
-          </div>
+    <div class="palm-row last">
+      <div class="palm-row-wrapper textfield-group">
+        <div class="title">
+          <div x-mojo-element="TextField" id="txtTitle" name="txtTitle"></div>
         </div>
       </div>
     </div>
+
   </div>
 
 </div>
