@@ -99,7 +99,10 @@ body {
   background: url(../images/icon-support-search.png) right 15px no-repeat;
 }
 
+/* Icons */
 .sort-icon { background-image : url(../images/sort-icon.png); }
+.tag-icon { background-image : url(../images/tag-icon.png); }
+.cloud-icon { background-image : url(../images/cloud-icon.png); }
 
 .datetime-picker {
   padding: 0 10px 7px 14px;                                               
