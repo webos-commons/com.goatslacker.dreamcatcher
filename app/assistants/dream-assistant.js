@@ -37,6 +37,25 @@ DreamAssistant.prototype = {
 
     // put the dream in the box
     this.controller.get('myDream').innerHTML = this.dream.summary;
+
+    // slap the tags
+    // first we need to query for tags
+    var c = new Snake.Criteria()
+      , that = this;
+
+    c.add(DreamTagPeer.DREAM_ID, this.dream.id);
+
+    DreamTagPeer.doSelect(c, function (tags) {
+      that.dream.tags = [];
+
+      // loop through all tags and add to array
+      for (var i = 0; i < tags.length; i = i + 1) {
+        that.dream.tags.push(tags[i].tag);
+      }
+
+      // add to template
+      that.controller.get('myTags').innerHTML = that.dream.tags.join(", ");
+    });
   },
 
   backupData: function (json_format) {

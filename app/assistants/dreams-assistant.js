@@ -153,7 +153,7 @@ DreamsAssistant.prototype = {
     c.add(DreamPeer.ID, event.item.id);
     DreamPeer.doDelete(c);
 
-    // cascade
+    // cascade FIXME Snake should cascade for you?
     c = new Snake.Criteria();
     c.add(DreamSearchPeer.DREAM_ID, event.item.id);
     DreamSearchPeer.doDelete(c);

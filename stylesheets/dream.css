@@ -104,3 +104,16 @@ body {
 .datetime-picker {
   padding: 0 10px 7px 14px;                                               
 }
+
+#tags {
+  margin-top: 10px;
+}
+
+.tag {
+  padding: 4px 8px;
+  margin: 5px;
+  -webkit-border-radius: 20px;
+  background: black; /* needs a nice background image for palm-dark & palm-light*/
+  color: white;
+  display: inline-block;
+}
