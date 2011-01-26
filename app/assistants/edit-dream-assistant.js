@@ -13,7 +13,7 @@ EditDreamAssistant.prototype = {
         {},
         { 
           items: [
-            { icon: "tag", command: "tag" },
+            { icon: "tag-icon", command: "tag" },
             { icon: "save", command: "save" }
           ]
         }
