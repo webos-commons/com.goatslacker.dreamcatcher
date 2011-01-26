@@ -61,6 +61,11 @@ PasswordAssistant.prototype = {
   },
 
   resetPassword: function () {
+    // TODO FIX: password reset and password saving is kinda funky.
+    // need to re-think of a way of auhenticating. people sometimes forget their passwords
+    // and a password reset system is difficult to implement since you never know who you're giving the resetted password to
+    var key = 'dr34m';
+/*
     var i = 0
       , key = "";
 
@@ -71,7 +76,7 @@ PasswordAssistant.prototype = {
     } else {
       key = "dr34m";
     }
-
+*/
     DreamsDB.prefs.password = key;
   },
 
@@ -82,12 +87,11 @@ PasswordAssistant.prototype = {
         this.resetPassword();
 
         var contact = { };
-        contact.value = DreamsDB.prefs.email || 'josh@goatslacker.com';
+        //contact.value = DreamsDB.prefs.email || 'josh@goatslacker.com';
+        contact.value = 'josh@goatslacker.com';
         contact.type = 'email';
         contact.role = 1;
 
-// TODO can't send the reset email password...need to first contact a service that automatically sends it
-/*
         this.controller.serviceRequest("palm://com.palm.applicationManager", {
           method: "open",
           parameters: { 
@@ -98,7 +102,7 @@ PasswordAssistant.prototype = {
             }
           }
         });
-*/
+
         break;
       }
     }
