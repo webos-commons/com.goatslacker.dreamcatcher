@@ -143,22 +143,24 @@ var DreamsDB = {
     this.database.add("dreams", this.dreams);
   },
 
-  loadBackupData: function (data) {
-  //data = '{ "dreamcatcher": ' + data + '}';
-
-  data = '{ "dreamcatcher": [{"date_format": "is this JSON string badly formatted too? do not think so"}] }';
-  // FIXME - dealing with some badly formatted JSON - need to fix this first and add { dreamcatcher: [] } to the Array
-
-  var json = data.evalJSON(true);
-  Mojo.Log.error('ok weve got some json, whats the length?');
-  Mojo.Log.error(json.dreamcatcher.length);
-
-    var i = 0,
+  loadBackupData: function (data, callback) {
+    var json = data.evalJSON(true),
+        i = 0,
         dream = null;
-    for (i; i < data.length; i = i + 1) {
-      dream = data[i];
 
-      Mojo.Log.error(dream.date_format);
+    for (i; i < json.dreams.length; i = i + 1) {
+      dream = json.dreams[i];
+
+      // add dreams to db
+      this.post({
+        title: dream.title,
+        dream: dream.summary,
+        timestamp: new Date(dream.created_at)
+      });
+    }
+
+    if (callback) {
+      callback();
     }
   },
 

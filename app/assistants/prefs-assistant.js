@@ -51,6 +51,8 @@ PrefsAssistant.prototype = {
 
   setup: function () {
 
+    this.controller.get('scrim').hide();
+
     // ======================================  
     // Widgets
     // ======================================  
@@ -200,8 +202,14 @@ PrefsAssistant.prototype = {
   dataPickerHandler: function () {
     Mojo.FilePicker.pickFile({
       onSelect: (function (event) {
-        var data = palmGetResource(event.fullPath);
-        DreamsDB.loadBackupData(data);
+        this.controller.get('scrim').show();
+        var data = palmGetResource(event.fullPath),
+            that = this;
+
+        DreamsDB.loadBackupData(data, function () {
+          that.controller.get('scrim').hide();
+          Mojo.Controller.getAppController().showBanner("Data finished loading", { source : 'prefs' });
+        });
       }).bind(this),
       actionName: "Select Dreamcatcher Backup",
       extensions: [ 'json', 'txt' ]
