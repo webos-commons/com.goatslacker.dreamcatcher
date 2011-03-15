@@ -322,8 +322,8 @@ var DreamsDB = {
       data = json.dreams[i];
 
       dream.title = data.title;
-      dream.summary = dream.summary;
-      dream.timestamp = new Date(dream.created_at);
+      dream.summary = data.summary;
+      dream.timestamp = new Date(data.created_at);
       dream.save();
     }
 
