@@ -235,9 +235,11 @@ var DreamsDB = {
       , c = null;
 
     // delete existing keywords
+/*
     c = new Snake.Criteria();
     c.add(DreamSearchPeer.DREAM_ID, dream.id);
     DreamSearchPeer.doDelete(c);
+*/
 
     // remove stop words
 
@@ -302,14 +304,7 @@ var DreamsDB = {
 
   retrieveLatest: function (callback, asc) {
     asc = asc || false;
-
-    var c = new Snake.Criteria();
-    if (asc) {
-      c.addAscendingOrderByColumn(DreamPeer.CREATED_AT);
-    } else {
-      c.addDescendingOrderByColumn(DreamPeer.CREATED_AT);
-    }
-    DreamPeer.doSelect(c, callback);
+    Snake.Venom.Dream.orderBy({ id: asc ? "asc" : "desc"}).doSelect(callback);
   },
 
   loadBackupData: function (data, callback) {

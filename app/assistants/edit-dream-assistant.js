@@ -108,6 +108,7 @@ EditDreamAssistant.prototype = {
 
       // add to the dreamcatcher
       this.dream.save(function (dream) {
+/*
         // update the index
         DreamsDB.updateSearchIndex(dream);
 
@@ -136,6 +137,7 @@ EditDreamAssistant.prototype = {
         Mojo.Controller.getAppController().showBanner("Dream saved", { 
           source: 'notification' 
         });
+*/
       });
     }
   },

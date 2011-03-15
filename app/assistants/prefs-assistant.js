@@ -233,9 +233,11 @@ PrefsAssistant.prototype = {
     this.controller.showAlertDialog({
       onChoose: function (value) {
         if (value === true) {
+/*
           DreamPeer.doDelete(new Snake.Criteria(), function () {
             Mojo.Controller.errorDialog("Data has been deleted");
           });
+*/
         }
       },
       title: "Are you sure",

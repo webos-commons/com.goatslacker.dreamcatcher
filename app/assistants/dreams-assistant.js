@@ -150,6 +150,7 @@ DreamsAssistant.prototype = {
   },
 
   deleteDream: function (event) {
+/*
     var c = new Snake.Criteria();
     c.add(DreamPeer.ID, event.item.id);
     DreamPeer.doDelete(c);
@@ -162,6 +163,7 @@ DreamsAssistant.prototype = {
     c = new Snake.Criteria();
     c.add(DreamTagPeer.DREAM_ID, event.item.id);
     DreamTagPeer.doDelete(c);
+*/
   },
 
   doSearch: function (event) {

@@ -38,6 +38,7 @@ DreamAssistant.prototype = {
     // put the dream in the box
     this.controller.get('myDream').innerHTML = this.dream.summary;
 
+/*
     // slap the tags
     // first we need to query for tags
     var c = new Snake.Criteria()
@@ -56,6 +57,7 @@ DreamAssistant.prototype = {
       // add to template
       that.controller.get('myTags').innerHTML = that.dream.tags.join(", ");
     });
+*/
   },
 
   backupData: function (json_format) {

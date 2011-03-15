@@ -1,15 +1,13 @@
-/* jslint white: true, devel: true, evil: true, laxbreak: true, onevar: true, undef: true, nomen: true, eqeqeq: true, plusplus: true, bitwise: true, regexp: true, newcap: true, immed: true, indent: 2, maxerr: 1 */
-/* global openDatabase */
-
 // base object
 var Snake = {
+  version: "0.1.0",
+  build: "alpha",
   global: this,
-  version: "0.0.27",
-  $nk_chain: [],
-  db: false,
   config: {},
-  debug: true,
-  has_loaded: false
+  log: function (msg) {
+    console.log(msg);
+  },
+  debug: false
 };
 
 // Prototype functions
@@ -32,208 +30,18 @@ Array.prototype.in_array = function (val) {
   @param foreign Object
   @return String
 */
-String.prototype.interpose = function (foreign) {
-  var str = this.toString()
-    , regexpx = null
-    , value = null
-    , i = false;
 
-  for (i in foreign) {
-    if (foreign.hasOwnProperty(i)) {
-      regexpx = eval("/#{" + i + "}/g");
-      value = (Snake.is_array(foreign[i])) ? foreign[i].join(", ") : foreign[i];
-      str = str.replace(regexpx, value);
+String.prototype.interpolation = function (obj) {
+  var str = this.toString(),
+      prop = null;
+
+  for (prop in obj) {
+    if (obj.hasOwnProperty(prop)) {
+      str = str.replace(new RegExp('#{' + prop + '}', 'g'), typeof obj[prop][1] === 'f' ? obj[prop]() : obj[prop]);
     }
   }
+
   return str;
-};
-
-/*
-  Initializes Snake with a schema, connects to the database and creates necessary tables.
-  @param o Object
-  TODO support versioning
-*/
-Snake.init = function (o) {
-  var self = Snake;  
-
-  if (!o) {
-    Mojo.Log.error("Error, configuration file not loaded");
-    return false;
-  }
-
-  // loads the schema into Snake
-  self.loadSchema(o);
-
-  // connects to database
-  // onSuccess, inserts the Sql from the loaded schema
-  self.connect(function () {
-    self.insertSql();
-  }, function (errorText) {
-    Mojo.Log.error(errorText);
-  });
-};
-
-/*
-  Functions to execute when Snake is ready.
-  @param func Object function
-*/
-Snake.ready = function (func) {
-  var self = Snake;
-  if (self.has_loaded) {
-    func();
-  } else {
-    self.$nk_chain.push(func);
-  }
-};
-
-/*
-  Loads the schema into Snake
-*/
-Snake.loadSchema = function (o) {
-  var self = Snake;
-  self.config = o;
-};
-
-/*
-  Creates the database connection
-  @param onSuccess Object function
-  @param onFailure Object function
-*/
-Snake.connect = function (onSuccess, onFailure) {
-  var self = Snake, db = self.config.database;
-
-  // defaults
-  onSuccess = onSuccess || function () {};
-  onFailure = onFailure || function () {};
-
-  // HTML5 openDatabase
-  self.db = openDatabase(db.name, db.version, db.displayName, db.size);
-
-  // callbacks
-  if (!self.db) {
-    onFailure("Could not open database");
-  } else {
-    onSuccess();
-  }
-};
-
-/*
-  Performs a query
-  @param query String
-  @param params Array
-  @param onSuccess Object
-  @param onFailure Object
-*/
-Snake.query = function (query, params, onSuccess, onFailure) {
-  var self = Snake;
-
-  // defaults
-  params = params || null;
-
-  onSuccess = onSuccess || function (transaction, results) {
-    Mojo.Log.error(transaction);
-    Mojo.Log.error(results);
-  };
-  onFailure = onFailure || function (transaction, error) {
-    Mojo.Log.error(transaction);
-    Mojo.Log.error(error);
-  };
-
-  if (!self.db) {
-    Mojo.Log.error("Database not connected");
-    return false;
-  } else {
-  
-    // HTML5 database perform query
-    self.db.transaction(function (transaction) {
-
-      // append semicolon to query
-      query = query + ";";
-
-      // debugging
-      if (self.debug) {
-        Mojo.Log.error(query);
-        if (params) {
-          Mojo.Log.error(params);
-        }
-      }
-
-      // perform query
-      transaction.executeSql(query, params, onSuccess, onFailure);
-    });
-  }
-};
-
-/*
-  Inserts specified SQL on init
-  TODO drop_existing flag?
-*/
-Snake.insertSql = function () {
-  var self = Snake
-    , i = 0
-    , query = null;
-
-  if (self.config.sql.length > 0) {
-
-    // loop through SQL statements
-    for (i = 0; i < self.config.sql.length; i = i + 1) {
-      query = self.config.sql[i];
-      // run the queries
-      self.query(query);
-    }
-  }
-
-  // execute onloads...
-  for (i = 0; i < self.$nk_chain.length; i = i + 1) {
-    self.$nk_chain[i]();
-  }
-  self.$nk_chain = [];
-
-  // set Snake to already loaded.
-  self.has_loaded = true;
-};
-
-
-// Base Classes
-/*
-  Base Class for the ORM
-*/
-Snake.Base = function (peer, prop) {
-  var name = null
-    , Model = function () { };
-
-  Model.prototype = {
-
-    peer: peer,
-
-    // saves a record in the database
-    save: function (onSuccess, onFailure) {
-      this.peer.doUpdate(this, onSuccess, onFailure);
-    },
-
-    hydrate: function (obj) {
-      var i = null;
-      for (i in obj) {
-        if (obj.hasOwnProperty(i)) {
-          this[i] = obj[i];
-        }
-      }
-    },
-
-    // deletes a record from the database
-    remove: function (onSuccess, onFailure) {
-      this.peer.doDeleteRecord(this, onSuccess, onFailure);
-    }
-  };
-
-  // Copy the properties over onto the new prototype
-  for (name in prop) {
-    if (prop.hasOwnProperty(name)) {
-      Model.prototype[name] = prop[name];
-    }
-  }
-   
-  return Model;
 };
 
 /*
@@ -241,16 +49,12 @@ Snake.Base = function (peer, prop) {
   @param peer Object
   @param callback Object
 */
-Snake.hydrateRS = function (peer, callback, transaction, results) {
-  var model = null
-    , i = 0
-    , model_rs = [];
+Snake.hydrateRS = function (model, callback, transaction, results) {
+  var i = 0,
+      model_rs = [];
 
   // loops through all results in the row
   for (i = 0; i < results.rows.length; i = i + 1) {
-
-    // creates a new model
-    model = new Snake.global[peer.jsName]();
 
     // hydrates the model
     model.hydrate(results.rows.item(i)); // YAY for hydrate
@@ -263,432 +67,579 @@ Snake.hydrateRS = function (peer, callback, transaction, results) {
   callback(model_rs);
 };
 
-/*
-  The peer class of an object. Handles multiple records of items.
-  @param obj Object
-*/
-Snake.BasePeer = function (prop) {
-  var name = null;
-  for (name in prop) {
-    if (prop.hasOwnProperty(name)) {
-      this[name] = prop[name];
-    }
-  }
-   
-  return this;
-};
+Snake.loadFromJSON = function (schema, onSuccess) {
+  var table = null,
+      column = null,
+      model = null;
 
-Snake.BasePeer.prototype = {
-  doCount: function (criteria, callback) {
-    criteria = criteria || new Snake.Criteria();
-    criteria.executeCount(this, callback);
-  },
+  for (table in schema) {
+    if (schema.hasOwnProperty(table)) {
+      model = schema[table];
 
-  // executes a SELECT query
-  doSelect: function (criteria, callback) {
-    criteria = criteria || new Snake.Criteria();
-    criteria.executeSelect(this, callback);
-  },
+      model.jsName = table;
+      model.columns.id = { type: "INTEGER" };
+      model.columns.created_at = { type: "TIME" };
 
-  // executes a SELECT query and returns 1 result
-  doSelectOne: function (criteria, callback) {
-    criteria = criteria || new Snake.Criteria();
-    criteria.setLimit(1);
-    criteria.executeSelect(this, function (result) {
-      if (callback && result.length >= 0) {
-        callback(result[0]);
+      model.map = [];
+      for (column in schema[table].columns) {
+        if (schema[table].columns.hasOwnProperty(column)) {
+          model.map.push(column);
+        }
       }
-    });
-  },
 
-  // deletes 1 record
-  doDeleteRecord: function (model, onSuccess, onFailure) {
-    var criteria = new Snake.Criteria();
-    criteria.add(this.ID, model.id);
-    this.doDelete(criteria, onSuccess, onFailure);
-  },
+      // TODO create relationships for the base objects
+      // TODO create doSelectJoins for the relationships
 
-  // deletes multiple records
-  doDelete: function (criteria, onSuccess, onFailure) {
-    criteria = criteria || new Snake.Criteria();
-    criteria.executeDelete(this, onSuccess, onFailure);
-  },
-
-  // executes an INSERT || UPDATE depending on the model
-  doUpdate: function (model, onSuccess, onFailure) {
-    var criteria = new Snake.Criteria();
-    if (model.id === null) {
-      criteria.executeInsert(model, this, onSuccess, onFailure);
-    } else {
-      criteria.executeUpdate(model, this, onSuccess, onFailure);
+      Snake.Venom[table] = new Snake.VenomousObject(model);
+      Snake.global[table] = new Snake.Base(model);
     }
-  },
-
-  // retrieves an item by it's PRIMARY KEY
-  retrieveByPK: function (pk, callback) {
-    var c = new Snake.Criteria();
-    c.add(this.ID, pk);
-    this.doSelect(c, callback);
   }
+
+  if (onSuccess) {
+    onSuccess();
+  }
+
 };
 
+// Base Classes
 /*
-  Criteria Class
-  Handles all the dirty SQL work
-  // TODO have a buildWhere, buildFrom, buildLimit functions. Separate them into another Object other than Criteria.
+  Base Class for the ORM
 */
-Snake.Criteria = function () {
-  this.select = [];
-  this.from = [];
-  this.join = [];
-  this.where = {
-    and: [],
-    params: []
+Snake.Base = function (table) {
+  var name = null,
+      dontExecuteQuery = false,
+      Model = function () { };
+
+  Model.is = function (extend) {
+    // Copy the properties over onto the new prototype
+    for (var name in extend) {
+      if (extend.hasOwnProperty(name)) {
+        this.prototype[name] = extend[name];
+      }
+    }
   };
-  this.order = [];
-  this.limit = false;
-  this.group = [];
-};
 
-Snake.Criteria.prototype = {
-  NOT_EQUAL: "<>",
-  EQUAL: "=", 
-  GREATER_THAN: ">", 
-  LESS_THAN: "<", 
-  GREATER_EQUAL: ">=", 
-  LESS_EQUAL: "<=",
-  LEFT_JOIN: "LEFT JOIN",
-  RIGHT_JOIN: "RIGHT_JOIN",
-  INNER_JOIN: "INNER_JOIN",
+  Model.prototype = {
 
-  add: function (field, value, selector) {
-    selector = this[selector] || this.EQUAL;
+    toSQL: function () {
+      dontExecuteQuery = true;
 
-    var i = 0
-      , or = []
-      , where = "#{field} #{selector} ?";
+      return this;
+    },
 
-    if (Snake.is_array(field) && Snake.is_array(value)) {
-      for (i = 0; i < field.length; i = i + 1) {
-        where = "#{field} #{selector} ?".interpose({
-          field: field[i],
-          selector: selector
-        });
-        or.push(where);
-      }
+    // saves a record in the database
+    save: function (onSuccess, onFailure) {
+      var model = this,
+          values = [],
+          q = [],
+          i = 0,
+          val = null,
+          sql = "";
 
-      this.where.and.push(or);
+      // update
+      if (this.id) {
+        for (i = 0; i < table.columns.length; i = i + 1) {
+          if (this[table.columns[i]] !== this['$nk_' + table.columns[i]]) {
+            val = this[table.columns[i]] || null;
+            values.push(val);
 
-      for (i = 0; i < value.length; i = i + 1) {
-        this.where.params.push(value[i]);
-      }
-    } else {
-      where = "#{field} #{selector} ?".interpose({
-        field: field,
-        selector: selector
-      });
-
-      this.where.and.push(where);
-      this.where.params.push(value);
-    }
-  },
-
-  addJoin: function (join1, join2, join_method) {
-    join_method = this[join_method] || this.LEFT_JOIN;
-
-    var db1 = join1.split(".")
-      , db2 = join2.split(".")
-      , table1 = db1[0]
-      , field1 = db1[1]
-      , table2 = db2[0]
-      , field2 = db2[1];
-
-    this.join.push({
-      method: join_method,
-      from: {
-        table: table1,
-        field: field1
-      },
-      to: {
-        table: table2,
-        field: field2
-      }
-    });
-  },
-
-  addDescendingOrderByColumn: function (column) {
-    if (!this.order.in_array(column)) {
-      this.order.push(column + " DESC");
-    }
-  },
-
-  addAscendingOrderByColumn: function (column) {
-    if (!this.order.in_array(column)) {
-      this.order.push(column + " ASC");
-    }
-  },
-
-  setLimit: function (limit) {
-    limit = limit || false;
-
-    if (limit) {
-      this.limit = limit;
-    }
-  },
-
-  executeCount: function (peer, callback) {
-    var i = 0
-      , sql = ""
-      , field = null
-      , from = null
-      , where = null
-      , params = null;
-
-    if (this.select.length === 0) {
-      this.select.push(peer.tableName + "." + peer.columns[0]);
-    }
-
-    // add the from
-    for (i = 0; i < this.select.length; i = i + 1) {
-      field = this.select[i];
-
-      from = field.split(".");
-      // tables to select from
-      if (!this.from.in_array(from[0])) {
-        this.from.push(from[0]);
-      }
-    }
-
-    // build select
-    sql = "SELECT COUNT(*) AS count FROM #{from}".interpose({
-      from: this.from
-    });
-
-    if (this.join.length > 0) {
-      for (i = 0; i < this.join.length; i = i + 1) {
-        sql = sql + " #{method} #{table} ON #{reference} = #{table}.#{key}".interpose({
-          method: this.join[i].method,
-          reference: this.join[i].from.table + "." + this.join[i].from.field,
-          table: this.join[i].to.table,
-          key: this.join[i].to.field
-        });
-      }
-    }
-
-    // where
-    if (this.where.and.length > 0) {
-      for (i = 0; i < this.where.and.length; i = i + 1) {
-        if (Snake.is_array(this.where.and[i])) {
-          this.where.and[i] = "(" + this.where.and[i].join(" OR ") + ")";
+            q.push(table.columns[i] + " = ?");
+          }
         }
-      }
 
-      where = this.where.and.join(" AND ");
-
-      sql = sql + " WHERE " + where;
-      params = this.where.params;
-    }
-
-    // order by
-    if (this.order.length > 0) {
-      sql = sql + " ORDER BY #{order}".interpose({ order: this.order });
-    }
-
-    Snake.query(sql, params, function (transaction, results) {
-      if (callback) {
-        var obj = results.rows.item(0);
-        callback(obj.count);
-      }
-    });
-  },
-
-  executeSelect: function (peer, callback) {
-    var i = 0
-      , sql = ""
-      , field = null
-      , from = null
-      , where = null
-      , params = null;
-
-    // add select columns
-    if (this.select.length === 0) {
-      for (i = 0; i < peer.columns.length; i = i + 1) {
-        this.select.push(peer.tableName + "." + peer.columns[i]);
-      }
-    }
-
-    // add the from
-    for (i = 0; i < this.select.length; i = i + 1) {
-      field = this.select[i];
-
-      from = field.split(".");
-      // tables to select from
-      if (!this.from.in_array(from[0])) {
-        this.from.push(from[0]);
-      }
-    }
-    // what happens if there are multiple froms??? FIXME/test
-
-    // build select
-    sql = "SELECT #{select} FROM #{from}".interpose({
-      select: this.select,
-      from: this.from
-    });
-
-    if (this.join.length > 0) {
-      for (i = 0; i < this.join.length; i = i + 1) {
-        sql = sql + " #{method} #{table} ON #{reference} = #{table}.#{key}".interpose({
-          method: this.join[i].method,
-          reference: this.join[i].from.table + "." + this.join[i].from.field,
-          table: this.join[i].to.table,
-          key: this.join[i].to.field
+        sql = "UPDATE #{table} SET #{conditions} WHERE id = #{id}".interpolation({
+          table: table.tableName,
+          conditions: q,
+          id: this.id
         });
-      }
-    }
 
-    // where
-    if (this.where.and.length > 0) {
-      for (i = 0; i < this.where.and.length; i = i + 1) {
-        if (Snake.is_array(this.where.and[i])) {
-          this.where.and[i] = "(" + this.where.and[i].join(" OR ") + ")";
-        }
-      }
+      // insert
+      } else {
 
-      where = this.where.and.join(" AND ");
-
-      sql = sql + " WHERE " + where;
-      params = this.where.params;
-    }
-
-    // order by
-    if (this.order.length > 0) {
-      sql = sql + " ORDER BY #{order}".interpose({ order: this.order });
-    }
-
-    // limiter
-    if (this.limit) {
-      sql = sql + " LIMIT #{limit}".interpose({ limit: this.limit });
-    }
-
-    Snake.query(sql, params, function (transaction, results) {
-      var arr = []
-        , i = 0
-        , obj = null
-        , tmp = null
-        , prop = null;
-
-      if (results.rows.length > 0) {
-        for (i = 0; i < results.rows.length; i = i + 1) {
-
-          obj = results.rows.item(i);
-          tmp = new Snake.global[peer.jsName]();
-
-          for (prop in obj) {
-            if (obj.hasOwnProperty(prop)) {
-              tmp[prop] = obj[prop];
-              tmp['$nk_' + prop] = obj[prop];
-            }
+        for (i = 0; i < table.map.length; i = i + 1) {
+          val = this[table.map[i]] || null;
+  
+          if (table.map[i] === 'created_at' && val === null) {
+            val = Date.now();
           }
 
-          arr.push(tmp);
+          values.push(val);
+          q.push("?");
         }
+
+        sql = "INSERT INTO '#{table}' (#{columns}) VALUES (#{q})".interpolation({
+          table: table.tableName,
+          columns: table.map,
+          q: q
+        });
       }
 
-      callback(arr);
-    });
-  },
 
-  executeInsert: function (model, peer, onSuccess, onFailure) {
-    var values = []
-      , q = []
-      , i = 0
-      , val = null
-      , sql = "";
-
-    for (i = 0; i < peer.columns.length; i = i + 1) {
-      val = model[peer.columns[i]] || null;
-
-      if (peer.columns[i] === 'created_at' && val === null) {
-        val = Date.now();
-      }
-
-      values.push(val);
-      q.push("?");
-    }
-
-    sql = "INSERT INTO '#{table}' (#{columns}) VALUES (#{q})".interpose({
-      table: peer.tableName,
-      columns: peer.columns,
-      q: q
-    });
-
-    Snake.query(sql, values, function (transaction, results) {
-      // set an ID
-      model.id = results.insertId;
-
-      if (onSuccess) {
-        onSuccess(model);
-      }
-    }, onFailure);
-  },
-
-  executeUpdate: function (model, peer, onSuccess, onFailure) {
-    var conditions = []
-      , values = []
-      , val = null
-      , i = 0
-      , sql = "";
-
-    for (i = 0; i < peer.columns.length; i = i + 1) {
-      if (model[peer.columns[i]] !== model['$nk_' + peer.columns[i]]) {
-        val = model[peer.columns[i]] || null;
-        values.push(val);
-
-        conditions.push(peer.columns[i] + " = ?");
-      }
-    }
-
-    sql = "UPDATE #{table} SET #{conditions} WHERE id = #{id}".interpose({
-      table: peer.tableName,
-      conditions: conditions,
-      id: model.id
-    });
-
-    Snake.query(sql, values, function (transaction, results) {
-      if (onSuccess) {
-        onSuccess(model);
-      }
-    }, onFailure);
-  },
-
-  executeDelete: function (peer, onSuccess, onFailure) {
-    var sql = ""
-      , where = ""
-      , params = null;
-
-    this.from = peer.tableName;  
-
-    // build select
-    sql = "DELETE FROM #{from}".interpose({
-      from: this.from
-    });
-
-    // where
-    if (this.where.and.length > 0) {
-      for (i = 0; i < this.where.and.length; i = i + 1) {
-        if (Snake.is_array(this.where.and[i])) {
-          this.where.and[i] = "(" + this.where.and[i].join(" OR ") + ")";
+      if (dontExecuteQuery === true) {
+        if (onSuccess) {
+          onSuccess(sql, values);
         }
+
+      } else {
+        Snake.query(sql, values, function (transaction, results) {
+          // set an ID
+          model.id = results.insertId;
+
+          if (onSuccess) {
+            onSuccess(model);
+          }
+        }, onFailure);
       }
 
-      where = this.where.and.join(" AND ");
+    },
 
-      sql = sql + " WHERE " + where;
-      params = this.where.params;
+    // deletes a record from the database
+    doDelete: function (onSuccess, onFailure) {
+      Snake.Venom[table.jsName].find(this.id).toSQL().doDelete(onSuccess, onFailure);
     }
+  };
 
-    Snake.query(sql, params, onSuccess, onFailure);
+  // Copy the properties over onto the new prototype
+  for (name in table.columns) {
+    if (table.columns.hasOwnProperty(name)) {
+      Model.prototype[name] = null;
+    }
   }
+
+  return Model;
 };
 
-"Criteria" in Snake.global || (Snake.global.Criteria = Snake.Criteria);
+// TODO support versioning
+Snake.query = (function () {
+  var Database = null,
+      Query = null;
+
+/*
+  @private
+  Creates the database connection
+  @param onSuccess Object function
+  @param onFailure Object function
+*/
+  function connect(onSuccess, onFailure) {
+    // defaults
+    onSuccess = onSuccess || function () {};
+    onFailure = onFailure || function () {};
+
+    // HTML5 openDatabase
+    Database = openDatabase("ext:dreamcatcher", "0.1", "Dreamcatcher Database", 65356);
+
+    // callbacks
+    if (!Database) {
+      onFailure("Could not open database");
+    } else {
+      onSuccess();
+    }
+  }
+
+  /*
+    Performs a query
+    @param query String
+    @param params Array
+    @param onSuccess Object
+    @param onFailure Object
+  */
+  Query = function (query, params, onSuccess, onFailure) {
+    var self = Snake;
+
+    // defaults
+    params = params || null;
+
+    onSuccess = onSuccess || function (transaction, results) {
+      self.log(transaction);
+      self.log(results);
+    };
+    onFailure = onFailure || function (transaction, error) {
+      self.log(transaction);
+      self.log(error);
+    };
+
+    if (!Database) {
+      self.log("Connecting to the database");
+      connect(function () {
+        Snake.query(query, params, onSuccess, onFailure);
+      });
+    } else {
+    
+      // HTML5 database perform query
+      Database.transaction(function (transaction) {
+
+        // append semicolon to query
+        query = query + ";";
+
+        // debugging
+        if (self.debug) {
+          self.log(query);
+          if (params) {
+            self.log(params);
+          }
+        } else {
+          // perform query
+          transaction.executeSql(query, params, onSuccess, onFailure);
+        }
+      });
+    }
+  };
+
+  return Query;
+}());
+
+Snake.VenomousObject = function (schema) {
+  var Selectors = {},
+      Model = {},
+      queryBuilder = null,
+      addWhere = null,
+      resetObj = null;
+
+  resetObj = function () {
+    Model.sql = {
+      dontExecuteQuery: false,
+      select: [],
+      from: schema.tableName,
+      where: {
+        criterion: [],
+        params: []
+      },
+      orderBy: [],
+      limit: false
+    };
+  };
+
+  addWhere = function () {
+    var field = arguments[0],
+        value = arguments[1],
+        selector = arguments[2] || Selectors.EQUAL,
+        q = [],
+        i = 0;
+
+    if (field in schema.columns) {
+      field = schema.tableName + "." + field;
+    }
+
+    switch (selector) {
+    case Selectors.ISNULL:
+    case Selectors.ISNOTNULL:
+      Model.sql.where.criterion.push(field + " " + selector);
+      break;
+
+    case Selectors.IN:
+    case Selectors.NOTIN:
+      for (i = 0; i < value.length; i = i + 1) {
+        q.push("?");
+      }
+
+      Model.sql.where.criterion.push(field + " " + selector + " (" + q.join(", ") + ")");
+      break;
+
+    default:
+      Model.sql.where.criterion.push(field + " " + selector + " ?");
+    }
+
+    if (value) {
+      if (Snake.is_array(value)) {
+        Model.sql.where.params = Model.sql.where.params.concat(value);
+      } else {
+        Model.sql.where.params.push(value);
+      }
+    }
+  };
+
+  queryBuilder = function (sql, query, onSuccess, onFailure) {
+    var params = null;
+    query = query || {};
+
+    // FROM
+    query.from = schema.tableName;
+
+    // TODO JOINs
+
+    // WHERE
+    if (Model.sql.where.criterion.length > 0) {
+      sql = sql + " WHERE #{where}";
+      // build the where...
+      query.where = Model.sql.where.criterion.join(" AND ");
+
+      params = Model.sql.where.params;
+    }
+
+    // ORDER BY
+    if (Model.sql.orderBy.length > 0) {
+      sql = sql + " ORDER BY #{orderBy}";
+      query.orderBy = Model.sql.orderBy;
+    }
+
+    // LIMIT && OFFSET
+    if (Model.sql.limit) {
+      if (Model.sql.offset) {
+        sql = sql + " LIMIT #{offset}, #{limit}";
+        query.offset = Model.sql.offset;
+      } else {
+        sql = sql + " LIMIT #{limit}";
+      }
+
+      query.limit = Model.sql.limit;
+    }
+
+    // if this query is not meant to be executed then we send it back to the onSuccess callback with the parameters Query {String}, Params {Array}
+    if (Model.sql.dontExecuteQuery === true) {
+      if (onSuccess) {
+        onSuccess(sql.interpolation(query), params);
+      }
+
+    // We run the query
+    } else {
+      Snake.query(sql.interpolation(query), params, function (transaction, results) {
+        var arr = [],
+            i = 0,
+            obj = null,
+            tmp = null,
+            prop = null;
+        
+        if (results.rows.length > 0) {
+          for (i = 0; i < results.rows.length; i = i + 1) {
+
+            obj = results.rows.item(i);
+            tmp = new Snake.global[schema.jsName]();
+
+            for (prop in obj) {
+              if (obj.hasOwnProperty(prop)) {
+                tmp[prop] = obj[prop];
+                tmp['$nk_' + prop] = obj[prop];
+              }
+            }
+
+            arr.push(tmp);
+          }
+        }
+
+        if (onSuccess) {
+          onSuccess(arr);
+        }
+      }, onFailure);
+
+    }
+
+    resetObj();
+  };
+
+  Selectors = {
+    EQUAL: "=", 
+    NOT_EQUAL: "<>",
+    GREATER_THAN: ">", 
+    LESS_THAN: "<", 
+    GREATER_EQUAL: ">=", 
+    LESS_EQUAL: "<=",
+    ISNULL: "IS NULL",
+    ISNOTNULL: "IS NOT NULL",
+    LIKE: "LIKE",
+    NOTLIKE: "NOT LIKE",
+    "IN": "IN",
+    NOTIN: "NOT IN",
+    LEFT_JOIN: "LEFT JOIN"
+  };
+
+  Model = {
+
+    find: function () {
+      var field = null,
+          value = null,
+          selector = null,
+          tmp = null;
+
+      // if we're passing each argument
+      if (arguments.length > 1) {
+        // first argument is the field
+        field = arguments[0];
+        // second argument should be the value
+        value = arguments[1];
+
+        // unless the value is actually a selector
+        if (value in Selectors) {
+          selector = Selectors[value];
+
+        // otherwise the third argument is the selector
+        } else {
+          selector = Selectors[arguments[2]] || Selectors.EQUAL;
+        }
+
+        addWhere(field, value, selector);
+
+      // we're not passing each argument
+      } else {
+
+        // Pull by ID
+        if (typeof(arguments[0]) === "number") {
+
+          addWhere("id", arguments[0]);
+
+        // It's an object
+        } else {
+
+          // loop through each field
+          for (field in arguments[0]) {
+
+            if (arguments[0].hasOwnProperty(field)) {
+              // the value is the property of the field
+              value = arguments[0][field];
+
+              switch (Object.prototype.toString.call(value)) {
+              // if the value is an Array then we perform an IN query
+              case "[object Array]":
+                selector = Selectors.IN;
+                addWhere(field, value, selector);
+                break;
+
+              // if the value is a Regular Expression then we perform a LIKE query
+              case "[object RegExp]": 
+                // TODO - NOT LIKE
+                selector = Selectors.LIKE;
+                tmp = value.toString();
+                value = tmp;
+                tmp = value.replace(/\W/g, "");
+
+                if (value.substr(1, 1) === '^') {
+                  value = tmp + '%';
+                } else if (value.substr(-2, 1) === '$') {
+                  value = '%' + tmp;
+                } else {
+                  value = '%' + tmp + '%';
+                }
+
+                addWhere(field, value, selector);
+                break;
+
+              // if the value is an Object then we need to loop through all the items in the object and set them for the current field
+              case "[object Object]":
+                for (tmp in value) {
+                  if (value.hasOwnProperty(tmp)) {
+                    selector = Selectors[tmp] || Selectors.EQUAL;
+
+                    addWhere(field, value[tmp], selector);
+                  }
+                }
+                break;
+
+              // by default the selector is =
+              default:
+                selector = Selectors.EQUAL;
+                addWhere(field, value, selector);
+              }
+            }
+
+          } // loop
+
+        } // typeof num
+
+      } // endif
+
+      return this;
+    },
+
+    orderBy: function (obj) {
+      var column = null,
+          sortOrder = "";
+      for (column in obj) {
+        if (obj.hasOwnProperty(column)) {
+          sortOrder = obj[column].toUpperCase();
+          if (column in schema.columns) {
+            column = schema.tableName + "." + column;
+          }
+          this.sql.orderBy.push(column + " " + sortOrder);
+        }
+      }
+
+      return this;
+    },
+
+    join: function (table, join_method) {
+      join_method = Selectors[join_method] || Selectors.LEFT_JOIN;
+
+      // FIXME -- need to lookup the schema information for the current table and match it up with the primary or foreign key on the other table
+      // possible syntax
+      // this.join(vql.Deck);
+    },
+
+    offset: function (offset) {
+      this.sql.offset = offset;
+      return this;
+    },
+
+    limit: function (limit) {
+      this.sql.limit = limit;
+      return this;
+    },
+
+    // just outputs the sql
+    toSQL: function () {
+      this.sql.dontExecuteQuery = true;
+      return this;
+    },
+
+    // retrieves by the current models primary key
+    retrieveByPK: function (pk, onSuccess, onFailure) {
+      this.find(pk).doSelect(onSuccess, onFailure);
+    },
+
+    // limits 1, returns obj
+    doSelectOne: function (onSuccess, onFailure) {
+      this.limit(1).doSelect(onSuccess, onFailure);
+    },
+
+    // returns count
+    doCount: function (onSuccess, onFailure, useDistinct) {
+      useDistinct = useDistinct ? "DISTINCT " : "";
+      var sql = "SELECT " + useDistinct + "COUNT(#{select}) FROM #{from}",
+          query = {};
+
+      if (this.sql.select.length === 0) {
+        query.select = "*";
+      } else {
+        query.select = this.sql.select;
+      }
+
+      queryBuilder(sql, query, onSuccess, onFailure);
+    },
+
+    // deletes objects
+    doDelete: function (onSuccess, onFailure) {
+      queryBuilder("DELETE FROM #{from}", null, onSuccess, onFailure);
+    },
+
+    // returns Array of objs
+    doSelect: function (onSuccess, onFailure) {
+      var sql = "SELECT #{select} FROM #{from}",
+          query = {};
+
+      if (this.sql.select.length === 0) {
+        query.select = "*";
+/*
+// this adds all the columns
+        query.select = [];
+        for (var column in schema.columns) {
+          query.select.push(schema.tableName + "." + column);
+        }
+      } else {
+*/
+      } else {
+        query.select = this.sql.select;
+      }
+
+      queryBuilder(sql, query, onSuccess, onFailure);
+    }
+
+
+  };
+
+  resetObj();
+
+  return Model;
+};
+
+Snake.Venom = {};
+
+var Venom = Snake.Venom,
+    vql = Venom;
