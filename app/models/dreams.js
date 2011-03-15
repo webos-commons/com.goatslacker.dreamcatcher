@@ -318,14 +318,13 @@ var DreamsDB = {
         dream = null;
 
     for (i; i < json.dreams.length; i = i + 1) {
-      dream = json.dreams[i];
+      dream = new Dream();
+      data = json.dreams[i];
 
-      // add dreams to db
-      this.post({
-        title: dream.title,
-        dream: dream.summary,
-        timestamp: new Date(dream.created_at)
-      });
+      dream.title = data.title;
+      dream.summary = dream.summary;
+      dream.timestamp = new Date(dream.created_at);
+      dream.save();
     }
 
     if (callback) {

@@ -136,7 +136,7 @@ PrefsAssistant.prototype = {
       alwaysOn: this.alwaysOnUpdate.bind(this),
       brightness: this.brightnessUpdate.bind(this),
       backgroundPicker: this.backgroundPickerHandler.bind(this),
-      deleteAll: this.truncateDB.bind(this)
+      deleteAll: this.truncateDB.bind(this),
       dataPicker: this.dataPickerHandler.bind(this)
     }
   },
