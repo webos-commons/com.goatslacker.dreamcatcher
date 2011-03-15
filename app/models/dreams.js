@@ -310,6 +310,31 @@ var DreamsDB = {
       c.addDescendingOrderByColumn(DreamPeer.CREATED_AT);
     }
     DreamPeer.doSelect(c, callback);
+  },
+
+  loadBackupData: function (data, callback) {
+    var json = data.evalJSON(true),
+        i = 0,
+        dream = null;
+
+    for (i; i < json.dreams.length; i = i + 1) {
+      dream = json.dreams[i];
+
+      // add dreams to db
+      this.post({
+        title: dream.title,
+        dream: dream.summary,
+        timestamp: new Date(dream.created_at)
+      });
+    }
+
+    if (callback) {
+      callback();
+    }
+  },
+
+  savePrefs: function () {
+    this.database.add("prefs", this.prefs);
   }
 
 };

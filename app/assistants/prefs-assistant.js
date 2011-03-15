@@ -57,11 +57,18 @@ PrefsAssistant.prototype = {
     backgroundPicker: {
       label: "Change Background",
       disabled: false
+    },
+
+    dataPicker: {
+      label: "Load Backup Data",
+      disabled: false
     }
   },
   handlers: { },
 
   setup: function () {
+
+    this.controller.get('scrim').hide();
 
     // ======================================  
     // Widgets
@@ -115,6 +122,10 @@ PrefsAssistant.prototype = {
     this.controller.setupWidget("backgroundPicker", {
     }, this.models.backgroundPicker);
 
+    // data loader
+    this.controller.setupWidget("dataPicker", {
+    }, this.models.dataPicker);
+
     // handlers
     this.handlers = {
       deactivate: this.deactivateWindow.bind(this),
@@ -126,6 +137,7 @@ PrefsAssistant.prototype = {
       brightness: this.brightnessUpdate.bind(this),
       backgroundPicker: this.backgroundPickerHandler.bind(this),
       deleteAll: this.truncateDB.bind(this)
+      dataPicker: this.dataPickerHandler.bind(this)
     }
   },
 
@@ -138,6 +150,7 @@ PrefsAssistant.prototype = {
     Mojo.Event.listen(this.controller.get("alwaysOn"), Mojo.Event.propertyChange, this.handlers.alwaysOn);
     Mojo.Event.listen(this.controller.get("brightnessSlider"), Mojo.Event.propertyChange, this.handlers.brightness);
     Mojo.Event.listen(this.controller.get("backgroundPicker"), Mojo.Event.tap, this.handlers.backgroundPicker);
+    Mojo.Event.listen(this.controller.get("dataPicker"), Mojo.Event.tap, this.handlers.dataPicker);
     Mojo.Event.listen(this.controller.stageController.document, Mojo.Event.stageDeactivate, this.handlers.deactivate);
     Mojo.Event.listen(this.controller.get("deleteAll"), Mojo.Event.tap, this.handlers.deleteAll);
   },
@@ -150,6 +163,7 @@ PrefsAssistant.prototype = {
     Mojo.Event.stopListening(this.controller.get("alwaysOn"), Mojo.Event.propertyChange, this.handlers.alwaysOn);
     Mojo.Event.stopListening(this.controller.get("brightnessSlider"), Mojo.Event.propertyChange, this.handlers.brightness);
     Mojo.Event.stopListening(this.controller.get("backgroundPicker"), Mojo.Event.tap, this.handlers.backgroundPicker);
+    Mojo.Event.stopListening(this.controller.get("dataPicker"), Mojo.Event.tap, this.handlers.dataPicker);
     Mojo.Event.stopListening(this.controller.stageController.document, Mojo.Event.stageDeactivate, this.handlers.deactivate);
     Mojo.Event.stopListening(this.controller.get("deleteAll"), Mojo.Event.tap, this.handlers.deleteAll);
   },
@@ -230,7 +244,25 @@ PrefsAssistant.prototype = {
         { label: "Yes, Continue", value: true, type: "negative" },
         { label: "Nevermind", value: "cancel", type: "dismiss" }
       ]
-    }); 
+    });
+
+  },
+
+  dataPickerHandler: function () {
+    Mojo.FilePicker.pickFile({
+      onSelect: (function (event) {
+        this.controller.get('scrim').show();
+        var data = palmGetResource(event.fullPath),
+            that = this;
+
+        DreamsDB.loadBackupData(data, function () {
+          that.controller.get('scrim').hide();
+          Mojo.Controller.getAppController().showBanner("Data finished loading", { source : 'prefs' });
+        });
+      }).bind(this),
+      actionName: "Select Dreamcatcher Backup",
+      extensions: [ 'json', 'txt' ]
+    }, this.controller.stageController);
   }
 
 };

@@ -51,6 +51,7 @@ DreamsAssistant.prototype = {
     this.controller.setupWidget("submenu-sort", {}, this.models.sortMenu);
     this.controller.setupWidget("submenu-sync", {}, this.models.syncMenu);
     this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, DreamsDB.appMenu);
+    this.controller.setupWidget("submenu-sync", {}, this.models.syncMenu);
     this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.models.cmdMenu);
 
     // ======================================  
@@ -199,6 +200,47 @@ DreamsAssistant.prototype = {
 
       for (i = 0; i < this.dreams.length; i = i + 1) {
         tmp.push(this.dreams[i].dream_date + "<br />----<br />" + this.dreams[i].summary);
+      }
+
+      dreams = tmp.join("<br /><br />");
+    }
+
+    this.controller.serviceRequest("palm://com.palm.applicationManager", {
+      method: "open",
+      parameters: { 
+        id: "com.palm.app.email",
+        params: {
+          summary: "Dreamcatcher Backup",
+          text: dreams
+        }
+      }
+    });
+  },
+
+  backupData: function (json_format) {
+    json_format = json_format || false;
+
+    var tmp = []
+      , i = 0
+      , dreams = "";
+
+    if (json_format) {
+      for (i = 0; i < DreamsDB.dreams.length; i = i + 1) {
+        json_format = {};
+
+        json_format.title = DreamsDB.dreams[i].title;
+        json_format.summary = DreamsDB.dreams[i].dream.replace(/<br>/gi, "");
+        json_format.dream_date = DreamsDB.dreams[i].date_format;
+        json_format.created_at = DreamsDB.dreams[i].timestamp;
+
+        tmp.push(json_format);
+      }
+
+      dreams = JSON.stringify({ "dreams": tmp });
+    } else {
+
+      for (i = 0; i < DreamsDB.dreams.length; i = i + 1) {
+        tmp.push(DreamsDB.dreams[i].dream_date + "<br />----<br />" + DreamsDB.dreams[i].summary);
       }
 
       dreams = tmp.join("<br /><br />");
