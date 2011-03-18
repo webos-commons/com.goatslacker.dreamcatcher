@@ -233,11 +233,9 @@ PrefsAssistant.prototype = {
     this.controller.showAlertDialog({
       onChoose: function (value) {
         if (value === true) {
-/*
-          DreamPeer.doDelete(new Snake.Criteria(), function () {
+          Snake.Venom.Dream.doDelete(function () {
             Mojo.Controller.errorDialog("Data has been deleted");
           });
-*/
         }
       },
       title: "Are you sure",
@@ -259,7 +257,7 @@ PrefsAssistant.prototype = {
 
         DreamsDB.loadBackupData(data, function () {
           that.controller.get('scrim').hide();
-          Mojo.Controller.getAppController().showBanner("Data finished loading", { source : 'prefs' });
+          Mojo.Controller.errorDialog("Data finished loading");
         });
       }).bind(this),
       actionName: "Select Dreamcatcher Backup",

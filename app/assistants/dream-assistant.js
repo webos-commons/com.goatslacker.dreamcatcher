@@ -32,21 +32,16 @@ DreamAssistant.prototype = {
     this.dream.title = this.dream.title || "";
 
     // load into template
-    var info = Mojo.View.render({ object: this.dream, template: 'dream/show' });
+    var info = Mojo.View.render({ object: this.dream, template: 'dream/show' }),
+        that = this;
     this.controller.get('my-dream').update(info);
 
     // put the dream in the box
     this.controller.get('myDream').innerHTML = this.dream.summary;
 
-/*
     // slap the tags
     // first we need to query for tags
-    var c = new Snake.Criteria()
-      , that = this;
-
-    c.add(DreamTagPeer.DREAM_ID, this.dream.id);
-
-    DreamTagPeer.doSelect(c, function (tags) {
+    Snake.Venom.DreamTag.find({ dream_id: this.dream.id }).doSelect(function (tags) {
       that.dream.tags = [];
 
       // loop through all tags and add to array
@@ -57,7 +52,6 @@ DreamAssistant.prototype = {
       // add to template
       that.controller.get('myTags').innerHTML = that.dream.tags.join(", ");
     });
-*/
   },
 
   backupData: function (json_format) {

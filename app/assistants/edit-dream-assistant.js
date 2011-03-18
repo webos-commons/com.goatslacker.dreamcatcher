@@ -108,17 +108,14 @@ EditDreamAssistant.prototype = {
 
       // add to the dreamcatcher
       this.dream.save(function (dream) {
-/*
         // update the index
         DreamsDB.updateSearchIndex(dream);
 
-        var c = new Snake.Criteria()
-          , i = 0
+        var i = 0
           , tag = null;
 
         // delete all tags prior to updating...
-        c.add(DreamTagPeer.DREAM_ID, thisDream.id);
-        DreamTagPeer.doDelete(c);
+        Snake.Venom.DreamTag.find({ dream_id: thisDream.id }).doDelete();
 
         // if there are tags, add them to the tags db
         if (thisDream.tags.length > 0) {
@@ -137,7 +134,6 @@ EditDreamAssistant.prototype = {
         Mojo.Controller.getAppController().showBanner("Dream saved", { 
           source: 'notification' 
         });
-*/
       });
     }
   },

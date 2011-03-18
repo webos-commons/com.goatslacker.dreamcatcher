@@ -235,11 +235,7 @@ var DreamsDB = {
       , c = null;
 
     // delete existing keywords
-/*
-    c = new Snake.Criteria();
-    c.add(DreamSearchPeer.DREAM_ID, dream.id);
-    DreamSearchPeer.doDelete(c);
-*/
+    Snake.Venom.DreamSearch.find({ dream_id: dream.id }).doDelete();
 
     // remove stop words
 
