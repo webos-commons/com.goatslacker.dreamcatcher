@@ -41,7 +41,7 @@ DreamAssistant.prototype = {
 
     // slap the tags
     // first we need to query for tags
-    Snake.Venom.DreamTag.find({ dream_id: this.dream.id }).doSelect(function (tags) {
+    Snake.venom.dreams_tags.find({ dream_id: this.dream.id }).doSelect(function (tags) {
       that.dream.tags = [];
 
       // loop through all tags and add to array

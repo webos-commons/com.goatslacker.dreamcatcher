@@ -153,9 +153,9 @@ DreamsAssistant.prototype = {
     var id = event.item.id;
 
     // TODO cascade on delete automatically
-    Snake.Venom.DreamSearch.find({ dream_id: id }).doDelete();
-    Snake.Venom.DreamTag.find({ dream_id: id }).doDelete();
-    Snake.Venom.Dream.find(id).doDelete();
+    Snake.venom.dreams_search.find({ dream_id: id }).doDelete();
+    Snake.venom.dreams_tags.find({ dream_id: id }).doDelete();
+    Snake.venom.dreams.find(id).doDelete();
   },
 
   doSearch: function (event) {

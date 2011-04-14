@@ -108,14 +108,19 @@ EditDreamAssistant.prototype = {
 
       // add to the dreamcatcher
       this.dream.save(function (dream) {
+/*
         // update the index
         DreamsDB.updateSearchIndex(dream);
+*/
 
+  
+/*
+        TODO - place in DreamsDB ?
         var i = 0
           , tag = null;
 
         // delete all tags prior to updating...
-        Snake.Venom.DreamTag.find({ dream_id: thisDream.id }).doDelete();
+        Snake.venom.dreams_tags.find({ dream_id: thisDream.id }).doDelete();
 
         // if there are tags, add them to the tags db
         if (thisDream.tags.length > 0) {
@@ -129,7 +134,7 @@ EditDreamAssistant.prototype = {
             tag.save();
           }
         }
-
+*/
         // notify the awake
         Mojo.Controller.getAppController().showBanner("Dream saved", { 
           source: 'notification' 
