@@ -32,6 +32,10 @@ EditDreamAssistant.prototype = {
     this.dream.created_at = this.dream.created_at || Date.now();
     this.models.datePicker.date = new Date(this.dream.created_at);
 
+    if (!this.models.datePicker.date.getTime()) {
+      this.models.datePicker.date = new Date();
+    }
+
     // Menus
     this.controller.setupWidget(Mojo.Menu.appMenu, { richTextEditMenu: true }, null);
     this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.models.cmdMenu);

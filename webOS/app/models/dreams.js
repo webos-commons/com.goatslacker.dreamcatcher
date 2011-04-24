@@ -150,7 +150,7 @@ var DreamsDB = {
 
   retrieveLatest: function (callback, asc) {
     asc = asc || false;
-    Snake.venom.dreams.orderBy({ id: asc ? "asc" : "desc"}).doSelect(callback);
+    Snake.venom.dreams.orderBy({ created_at: asc ? "asc" : "desc"}).doSelect(callback);
   },
 
   loadBackupData: function (data, callback) {
