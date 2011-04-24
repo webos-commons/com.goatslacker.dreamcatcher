@@ -198,6 +198,19 @@ var DreamsDB = {
       q.push("?");
     }
 
+    function allocation(dreams) {
+      var i = 0,
+          max = dreams.length,
+          nDreams = [];
+
+      // loop through all new dreams and allocate them into a Dream object
+      for (i; i < max; i = i + 1) {
+        nDreams.push(Dream.allocate(dreams[i], new Dream()));
+      }
+
+      callback(nDreams);
+    }
+
     // custom query
     query = "SELECT COUNT(*) AS nb, SUM(weight) AS total_weight, dreams.id, dreams.title, dreams.summary, dreams.dream_date, dreams.created_at FROM dreams_search, dreams WHERE dream_id = dreams.id AND stem IN (#{words}) GROUP BY dreams.id ORDER BY nb DESC, total_weight DESC";
 
@@ -207,15 +220,16 @@ var DreamsDB = {
         var lucid = [];
         lucid = lucid.concat(dreams);
 
-        Snake.query(query.interpolate({ words: q }), stemmed_words, function (dreams) {
+        Snake.query(query.interpolate({ words: q }), stemmed_words, function (dreams) { // FIXME allocate
           lucid = lucid.concat(dreams);
-          callback(lucid);
+
+          allocation(lucid, callback);
         });
       });
     } else {
       // hydrates a record set
       Snake.query(query.interpolate({ words: q }), stemmed_words, function (dreams) {
-        callback(dreams);
+        allocation(dreams);
       });
     }
 
