@@ -61,76 +61,85 @@ var DreamsDB = {
     }
   },
 
-/*
-  deprecate: function (controller, onDeprecateSuccess, onNoDeprecate) {
-    if (this.dreams.length === 0) {
-      this.database.get('dreams', (function (data) {
-        if (data) {
-          this.dreams = data;
-          this._deprecate(this.dreams, controller, onDeprecateSuccess);
-        } else {
-          onNoDeprecate();
-        }
-      }).bind(this));
-    } else {
-      this._deprecate(this.dreams, controller, onDeprecateSuccess);
+  deprecate: function (controller, onSuccess, onFailure) {
+    var self = this;
+
+    function deprecate(dreams) {
+
+      controller.showAlertDialog({
+        onChoose: function () {
+          var dream = null,
+              tags = [],
+              i = 0,
+              j = 0,
+              tag = null;
+
+          self.dreams = [];
+
+          for (i = 0; i < dreams.length; i = i + 1) {
+            dream = new Dream();
+            dream.title = dreams[i].title;
+            dream.summary = dreams[i].dream;
+            dream.dream_date = dreams[i].date_format;
+            dream.created_at = dreams[i].timestamp;
+
+            self.dreams.push(dream);
+
+            dream.save();
+          }
+
+          // dump the old database
+          self.database.add('dreams', null);
+
+          // set in prefs that we're not using depot anymore
+          self.prefs.noDepot = true;
+          self.savePrefs();
+
+          if (onSuccess) {
+            onSuccess();
+          }
+
+        },
+        title: "Upgrading Application",
+        message: "Dreamcatcher needs a minute or two to sort your dreams for the new search features. Do not close or restart the app until the process has completed.",
+        choices: [{ label: "Continue", value: "cancel", type: 'affirmative'}]
+      });
+
     }
-  },
 
-  _deprecate: function (dreams, controller, callback) {
-
-    controller.showAlertDialog({
-      onChoose: (function () {
-
-        var dream = null
-          , i = 0
-          , tags = []
-          , j = 0
-          , tag = null;
-
-        this.dreams = [];
-
-        for (i = 0; i < dreams.length; i = i + 1) {
-          dream = new Dream();
-          dream.title = dreams[i].title;
-          dream.summary = dreams[i].dream;
-          dream.dream_date = dreams[i].date_format;
-          dream.created_at = dreams[i].timestamp;
-
-          this.dreams.push(dream);
-
-          dream.save();
+    if (this.dreams.length === 0) {
+      this.database.get('dreams', function (data) {
+        if (data) {
+          self.dreams = data;
+          deprecate(self.dreams);
+        } else {
+          if (onFailure) {
+            onFailure();
+          }
         }
-
-        // dump the old database
-        this.database.add('dreams', null);
-
-        // set in prefs that we're not using depot anymore
-        this.prefs.noDepot = true;
-        this.savePrefs();
-
-        if (callback) {
-          callback();
-        }
-
-      }).bind(this),
-      title: "Upgrading Application",
-      message: "Dreamcatcher needs a minute or two to sort your dreams for the new search features. Do not close or restart the app until the process has completed.",
-      choices: [{ label: "Continue", value: "cancel", type: 'affirmative'}]
-    });
+      });
+    } else {
+      deprecate(self.dreams);
+    }
 
   },
-*/
 
   loadPrefs: function (onSuccess, onFailure) {
     var self = this;
     this.database.get('prefs', function (data) {
-      if (data) {
-        self.prefs = data;
+      var prefs = self.prefs,
+          val = null;
+
+      data = data || {};
+
+      for (val in data) {
+        if (data.hasOwnProperty(val)) {
+          prefs[val] = data[val];
+        }
       }
-      
+
       if (onSuccess) {
-        onSuccess(self.prefs);
+        onSuccess(prefs);
       }
     }, onFailure);
   },

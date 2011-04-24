@@ -1,7 +1,10 @@
-function SplashAssistant () { }
+/*global Metrix AjaxRequestWrapper ServiceRequestWrapper DreamsDB Mojo */
+function SplashAssistant() { }
 
 SplashAssistant.prototype = {
   setup: function () {
+
+    var self = this;
 
     // initialize the dreams database
     DreamsDB.initialize();
@@ -20,34 +23,40 @@ SplashAssistant.prototype = {
     // ======================================
 
     // load prefs
-    DreamsDB.loadPrefs((function (prefs) {
+    DreamsDB.loadPrefs(function (prefs) {
 
-/*
       // Deprecate the dreamsdb database
       if (DreamsDB.prefs.noDepot === false) {
-        DreamsDB.deprecate(this.controller, (function () {
-          this.controller.showAlertDialog({
-            onChoose: (function () {
+        DreamsDB.deprecate(self.controller, function () {
+          self.controller.showAlertDialog({
+            onChoose: function () {
               // apply the user preferences from ealier, unlock the app, and move on...
-              this.updatePrefs(prefs);
-
-            }).bind(this),
+              self.updatePrefs(prefs);
+            },
             title: "Success!",
             message: "Done merging data. Dreamcatcher is now up-to-date. Enjoy the new Search features ^_^",
-            choices:[{ label: "Ok", value:"cancel", type:'affirmative'}]
+            choices: [{
+              label: "Ok",
+              value: "cancel",
+              type: 'affirmative'
+            }]
           }); 
-        }).bind(this), this.updatePrefs.bind(this, prefs));
+        }, function () {
+          self.controller.showErrorDialog("Dreamcatcher didn't finish loading the data for some reason... #3");
+          self.updatePrefs(prefs);
+        });
 
       // the Depot is already deprecated, apply the user preferences.
       } else {
-        this.updatePrefs(prefs);
+        self.updatePrefs(prefs);
       }
-*/
-      this.updatePrefs(prefs);
-    }).bind(this), this.unlock.bind(this));
+
+    }, this.unlock);
   },
 
   updatePrefs: function (prefs) {
+    var self = this;
+
     // password
     if (DreamsDB.prefs.passwordProtect && DreamsDB.locked) {
       Mojo.Controller.stageController.swapScene({ name: "password" });
@@ -63,17 +72,17 @@ SplashAssistant.prototype = {
       // load system wallpaper
       } else {
         DreamsDB.ServiceRequest.request('palm://com.palm.systemservice', {
-          method:"getPreferences",                                                          
+          method: "getPreferences",                                                          
           parameters: {
             keys: ["wallpaper"],
             subscribe: true
           },
-          onSuccess: (function (event) {
+          onSuccess: function (event) {
             var wallpaperImage = "file://" + event.wallpaper.wallpaperFile;
             DreamsDB.prefs.wallpaper = wallpaperImage;
             DreamsDB.savePrefs();
-            this.controller.get('myBodyIsYourBody').style.backgroundImage = "url('" + wallpaperImage + "')";
-          }).bind(this)
+            self.controller.get('myBodyIsYourBody').style.backgroundImage = "url('" + wallpaperImage + "')";
+          }
         });
       }
 
