@@ -22,9 +22,9 @@ SplashAssistant.prototype = {
     // load prefs
     DreamsDB.loadPrefs((function (prefs) {
 
+/*
       // Deprecate the dreamsdb database
       if (DreamsDB.prefs.noDepot === false) {
-
         DreamsDB.deprecate(this.controller, (function () {
           this.controller.showAlertDialog({
             onChoose: (function () {
@@ -42,8 +42,9 @@ SplashAssistant.prototype = {
       } else {
         this.updatePrefs(prefs);
       }
+*/
+      this.updatePrefs(prefs);
     }).bind(this), this.unlock.bind(this));
-
   },
 
   updatePrefs: function (prefs) {

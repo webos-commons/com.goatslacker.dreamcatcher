@@ -1,3 +1,4 @@
+/*global Dream DreamTag Mojo Snake stemmer*/
 // holds all your dreams
 var DreamsDB = {
   dreams: [],
@@ -34,6 +35,7 @@ var DreamsDB = {
   },
 
   handleCommand: function (event) {
+/*
     if (event.type === Mojo.Event.command) {
       switch(event.command) {
       case "help":
@@ -41,6 +43,7 @@ var DreamsDB = {
         break;
       }
     }
+*/
   },
 
 /* Database */
@@ -58,6 +61,7 @@ var DreamsDB = {
     }
   },
 
+/*
   deprecate: function (controller, onDeprecateSuccess, onNoDeprecate) {
     if (this.dreams.length === 0) {
       this.database.get('dreams', (function (data) {
@@ -95,28 +99,7 @@ var DreamsDB = {
 
           this.dreams.push(dream);
 
-          dream.save((function (i, model) {
-            if (dreams[i].tags.length > 0) {
-
-              tags = [];
-
-              for (j = 0; j < dreams[i].tags.length; j = j + 1) {
-                tag = new DreamTag();
-                tag.dream_id = model.id;
-                tag.tag = dreams[i].tags[j].replace(/[^a-zA-Z 0-9]+/g,'');
-                tag.normalized = tag.tag.toLowerCase().split(" ").join("-");
-
-                if (tag.tag) {
-                  tag.save();
-                  tags.push(tag.tag);
-                }
-              }
-
-              model.tags = tags;
-            }
-
-            this.updateSearchIndex(model); 
-          }).bind(this, i));
+          dream.save();
         }
 
         // dump the old database
@@ -133,21 +116,23 @@ var DreamsDB = {
       }).bind(this),
       title: "Upgrading Application",
       message: "Dreamcatcher needs a minute or two to sort your dreams for the new search features. Do not close or restart the app until the process has completed.",
-      choices:[{ label: "Continue", value:"cancel", type:'affirmative'}]
+      choices: [{ label: "Continue", value: "cancel", type: 'affirmative'}]
     });
 
   },
+*/
 
   loadPrefs: function (onSuccess, onFailure) {
-    this.database.get('prefs', (function (data) {
+    var self = this;
+    this.database.get('prefs', function (data) {
       if (data) {
-        this.prefs = data;
+        self.prefs = data;
       }
       
       if (onSuccess) {
-        onSuccess(this.prefs);
+        onSuccess(self.prefs);
       }
-    }).bind(this), onFailure);
+    }, onFailure);
   },
 
   savePrefs: function () {
@@ -179,8 +164,48 @@ var DreamsDB = {
     }
   },
 
-  savePrefs: function () {
-    this.database.add("prefs", this.prefs);
+  doSearch: function (search_term, callback) {
+    var words = search_term.split(" "),
+        stemmed_words = [],
+        i = 0,
+        query = "",
+        phrase = false,
+        q = [];
+    
+    // there is more than 1 word.
+    if (words.length > 1) {
+
+      // we need to execute two queries, one for the entire term stemmed and replaced and then the loop of words
+      phrase = stemmer(search_term.toLowerCase().replace(/[^a-zA-Z 0-9]+/g, '')); // FIXME regex
+    }
+
+    // single words
+    for (i = 0; i < words.length; i = i + 1) {
+      stemmed_words.push(stemmer(words[i].toLowerCase().replace(/[^a-zA-Z 0-9]+/g, ''))); // FIXME regex -- geez I should make this a func
+      q.push("?");
+    }
+
+    // custom query
+    query = "SELECT COUNT(*) AS nb, SUM(weight) AS total_weight, dreams.id, dreams.title, dreams.summary, dreams.dream_date, dreams.created_at FROM dreams_search, dreams WHERE dream_id = dreams.id AND stem IN (#{words}) GROUP BY dreams.id ORDER BY nb DESC, total_weight DESC";
+
+    if (phrase !== false) {
+      // run first query and the mix with second set of results
+      Snake.query(query.interpolate({ words: "?" }), [phrase], function (dreams) {
+        var lucid = [];
+        lucid = lucid.concat(dreams);
+
+        Snake.query(query.interpolate({ words: q }), stemmed_words, function (dreams) {
+          lucid = lucid.concat(dreams);
+          callback(lucid);
+        });
+      });
+    } else {
+      // hydrates a record set
+      Snake.query(query.interpolate({ words: q }), stemmed_words, function (dreams) {
+        callback(dreams);
+      });
+    }
+
   }
 
 };

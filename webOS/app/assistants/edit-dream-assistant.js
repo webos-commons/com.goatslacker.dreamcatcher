@@ -1,4 +1,5 @@
-function EditDreamAssistant (dream) {
+/*global Dream Mojo */
+function EditDreamAssistant(dream) {
   this.dream = dream || new Dream();
 }
 
@@ -50,7 +51,7 @@ EditDreamAssistant.prototype = {
     }); 
  
     this.controller.setupWidget("txtTags", {
-      hintText: $L("Tags..."),
+      hintText: "Tags...",
       multiline: false,
       enterSubmits: false,
       focus: false
@@ -85,19 +86,19 @@ EditDreamAssistant.prototype = {
   },
 
   save: function () {
-    if (this.controller && this.controller.get('richDream').innerHTML != "") {
+    if (this.controller && this.controller.get('richDream').innerHTML !== "") {
 
       this.dream.summary = this.controller.get('richDream').innerHTML;
       this.dream.title = this.controller.get('txtTitle').mojo.getValue();
       this.dream.created_at = this.models.datePicker.date.getTime();
 
       // format the date
-      var thisDream = this.dream
-        , dateObj = new Date(this.dream.created_at)
-        , date_format
-        , month = (dateObj.getMonth() + 1)
-        , day = dateObj.getDate()
-        , year = dateObj.getFullYear();
+      var thisDream = this.dream,
+          dateObj = new Date(this.dream.created_at),
+          date_format,
+          month = (dateObj.getMonth() + 1),
+          day = dateObj.getDate(),
+          year = dateObj.getFullYear();
 
       // fix 9 into 09 for MM/DD/YYYY format
       month = (month > 9) ? month : "0" + month;

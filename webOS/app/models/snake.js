@@ -41,9 +41,7 @@ var Snake = {
   debug: false,
   config: {},
   log: function (msg) {
-    if (console) {
-      console.log(msg);
-    }
+    Mojo.Log.error(JSON.stringify(msg));
   },
 
   /**
@@ -1092,3 +1090,5 @@ Snake.loadFromJSON = function (schema, onComplete, create_tables) {
     }
   }
 };
+
+(function () { Snake.debug = true; }());
