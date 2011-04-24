@@ -133,29 +133,38 @@ Snake.loadFromJSON({
       }
     },
 
-    save: function () {
-      // update the index
-      this.updateSearchIndex();
+    save: function (onSuccess, onFailure, output_sql) {
+      var self = this;
 
-      var i = 0,
-          tag = null;
+      this.$super.save.call(this, function (dream) {
+        // update the index
+        self.updateSearchIndex();
 
-      // delete all tags prior to updating...
-      Snake.venom.dreams_tags.find({ dream_id: this.id }).doDelete();
+        var i = 0,
+            tag = null;
 
-      // if there are tags, add them to the tags db
-      if (this.tags.length > 0) {
-        for (i = 0; i < this.tags.length; i = i + 1) {
-          tag = new DreamTag();
-          tag.dream_id = this.id;
+        dream.tags = dream.tags || [];
 
-          tag.tag = this.tags[i].replace(/[^a-zA-Z 0-9]+/g, ''); // FIXME Regex
-          tag.normalized = tag.tag.toLowerCase().split(" ").join("-");
-          tag.save();
+        // delete all tags prior to updating...
+        Snake.venom.dreams_tags.find({ dream_id: dream.id }).doDelete();
+
+        // if there are tags, add them to the tags db
+        if (dream.tags.length > 0) {
+          for (i = 0; i < dream.tags.length; i = i + 1) {
+            tag = new DreamTag();
+            tag.dream_id = dream.id;
+
+            tag.tag = dream.tags[i].replace(/[^a-zA-Z 0-9]+/g, ''); // FIXME Regex
+            tag.normalized = tag.tag.toLowerCase().split(" ").join("-");
+            tag.save();
+          }
         }
-      }
 
-      this.$super.save.apply(this, arguments);
+        if (onSuccess) {
+          onSuccess(dream);
+        }
+      }, onFailure, output_sql);
+
     }
   });
 }, true);

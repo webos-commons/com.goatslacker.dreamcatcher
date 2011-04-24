@@ -109,33 +109,6 @@ EditDreamAssistant.prototype = {
 
       // add to the dreamcatcher
       this.dream.save(function (dream) {
-/*
-        // update the index
-        DreamsDB.updateSearchIndex(dream);
-*/
-
-  
-/*
-        TODO - place in DreamsDB ?
-        var i = 0
-          , tag = null;
-
-        // delete all tags prior to updating...
-        Snake.venom.dreams_tags.find({ dream_id: thisDream.id }).doDelete();
-
-        // if there are tags, add them to the tags db
-        if (thisDream.tags.length > 0) {
-          for (i = 0; i < thisDream.tags.length; i = i + 1) {
-            tag = new DreamTag();
-            tag.dream_id = thisDream.id;
-
-            // FIXME Snake needs to be rewritten so we can extend the classes to automatically do this.
-            tag.tag = thisDream.tags[i].replace(/[^a-zA-Z 0-9]+/g,'');
-            tag.normalized = tag.tag.toLowerCase().split(" ").join("-");
-            tag.save();
-          }
-        }
-*/
         // notify the awake
         Mojo.Controller.getAppController().showBanner("Dream saved", { 
           source: 'notification' 
