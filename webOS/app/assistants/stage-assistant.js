@@ -1,5 +1,7 @@
+/*global DreamsDB Mojo */
+
 // App Controller
-function AppAssistant () {
+function AppAssistant() {
 }
 
 // webOS 2.0
@@ -10,7 +12,7 @@ AppAssistant.prototype.handleLaunch = function (params) {
 };
 
 // Stage Controller
-function StageAssistant () {
+function StageAssistant() {
 	/* this is the creator function for your stage assistant object */
 }
 

@@ -1,4 +1,4 @@
-/*global Mojo DreamsDB */
+/*global Mojo DreamsDB Snake palmGetResource */
 function PrefsAssistant() { }
 
 PrefsAssistant.prototype = {
@@ -205,13 +205,15 @@ PrefsAssistant.prototype = {
   },
 
   backgroundPickerHandler: function () {
+    var self = this;
+
     // background picker
     Mojo.FilePicker.pickFile({
-      onSelect: (function (event) {
+      onSelect: function (event) {
         var wallpaperImage = "file://" + event.fullPath;
-        this.controller.get('myBodyIsYourBody').style.backgroundImage = "url('" + wallpaperImage + "')";
+        self.controller.get('myBodyIsYourBody').style.backgroundImage = "url('" + wallpaperImage + "')";
         DreamsDB.prefs.wallpaper = event.fullPath;
-      }).bind(this),
+      },
       kind: "image",
       actionName: "Select Background",
       extensions: [ 'png', 'jpg', 'jpeg' ]
@@ -251,17 +253,17 @@ PrefsAssistant.prototype = {
   },
 
   dataPickerHandler: function () {
+    var self = this;
     Mojo.FilePicker.pickFile({
-      onSelect: (function (event) {
-        this.controller.get('scrim').show();
-        var data = palmGetResource(event.fullPath),
-            that = this;
+      onSelect: function (event) {
+        self.controller.get('scrim').show();
+        var data = palmGetResource(event.fullPath);
 
         DreamsDB.loadBackupData(data, function () {
-          that.controller.get('scrim').hide();
+          self.controller.get('scrim').hide();
           Mojo.Controller.errorDialog("Data finished loading");
         });
-      }).bind(this),
+      },
       actionName: "Select Dreamcatcher Backup",
       extensions: [ 'json', 'txt' ]
     }, this.controller.stageController);
