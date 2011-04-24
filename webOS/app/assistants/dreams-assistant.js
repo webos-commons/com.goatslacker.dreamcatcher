@@ -1,4 +1,5 @@
-function DreamsAssistant () {
+/*global Mojo Snake DreamsDB */
+function DreamsAssistant() {
   this.dreams = [];
 }
 
@@ -11,7 +12,7 @@ DreamsAssistant.prototype = {
           items: [
             { icon: "sort-icon", submenu: "submenu-sort" }
           ]
-        },{}, {
+        }, {}, {
           items: [
             { icon: "new", command: "dream" },
             { icon: "sync", submenu: "submenu-sync" }
@@ -168,47 +169,6 @@ DreamsAssistant.prototype = {
     }
 
     DreamsDB.curQuery = event.value;
-  },
-
-  backupData: function (json_format) {
-    json_format = json_format || false;
-
-    var tmp = []
-      , i = 0
-      , dreams = "";
-
-    if (json_format) {
-      for (i = 0; i < this.dreams.length; i = i + 1) {
-        json_format = {};
-
-        json_format.title = this.dreams[i].title;
-        json_format.summary = this.dreams[i].summary;
-        json_format.dream_date = this.dreams[i].dream_date;
-        json_format.created_at = this.dreams[i].dream_date;
-
-        tmp.push(json_format);
-      }
-
-      dreams = Object.toJSON(tmp);
-    } else {
-
-      for (i = 0; i < this.dreams.length; i = i + 1) {
-        tmp.push(this.dreams[i].dream_date + "<br />----<br />" + this.dreams[i].summary);
-      }
-
-      dreams = tmp.join("<br /><br />");
-    }
-
-    this.controller.serviceRequest("palm://com.palm.applicationManager", {
-      method: "open",
-      parameters: { 
-        id: "com.palm.app.email",
-        params: {
-          summary: "Dreamcatcher Backup",
-          text: dreams
-        }
-      }
-    });
   },
 
   backupData: function (json_format) {

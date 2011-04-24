@@ -1,4 +1,5 @@
-function DreamAssistant (dream) { 
+/*global Mojo DreamsDB Snake */
+function DreamAssistant(dream) { 
   this.dream = dream;
 }
 
@@ -6,7 +7,7 @@ DreamAssistant.prototype = {
   models: {
     cmdMenu: {
       items: [
-        {},{}, {
+        {}, {}, {
           items: [
             { label: "Edit", command: "edit" },
             { icon: "sync", submenu: "submenu-sync" }
@@ -83,7 +84,7 @@ DreamAssistant.prototype = {
     });
   },
 
-  handleCommand: function(event) {
+  handleCommand: function (event) {
     if (event.type === Mojo.Event.command) {
       switch (event.command) {
       case "edit":

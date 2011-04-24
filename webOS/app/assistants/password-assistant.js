@@ -1,4 +1,5 @@
-function PasswordAssistant () { }
+/*global Mojo DreamsDB */
+function PasswordAssistant() { }
 
 PasswordAssistant.prototype = {
   models: {

@@ -1,4 +1,5 @@
-function PrefsAssistant () { }
+/*global Mojo DreamsDB */
+function PrefsAssistant() { }
 
 PrefsAssistant.prototype = {
   models: { 
@@ -138,7 +139,7 @@ PrefsAssistant.prototype = {
       backgroundPicker: this.backgroundPickerHandler.bind(this),
       deleteAll: this.truncateDB.bind(this),
       dataPicker: this.dataPickerHandler.bind(this)
-    }
+    };
   },
 
   activate: function (event) {

@@ -1,4 +1,5 @@
-function HelpAssistant () { }
+/*global Mojo DreamsDB */
+function HelpAssistant() { }
 // TODO rename to About & add a help
 
 HelpAssistant.prototype = {

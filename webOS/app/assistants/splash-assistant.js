@@ -42,7 +42,6 @@ SplashAssistant.prototype = {
             }]
           }); 
         }, function () {
-          self.controller.showErrorDialog("Dreamcatcher didn't finish loading the data for some reason... #3");
           self.updatePrefs(prefs);
         });
 
