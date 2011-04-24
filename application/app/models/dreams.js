@@ -17,10 +17,12 @@ var DreamsDB = {
     passwordProtect: false,
     password: "",
     email: "",
+    sort: false,
     alwaysOn: true,
     noDepot: false
   },
 
+  // tmp vars
   curQuery: null,
 
 /* App */
@@ -149,7 +151,9 @@ var DreamsDB = {
   },
 
   retrieveLatest: function (callback, asc) {
-    asc = asc || false;
+    if (typeof asc === "undefined") {
+      asc = this.prefs.sort;
+    }
     Snake.venom.dreams.orderBy({ created_at: asc ? "asc" : "desc"}).doSelect(callback);
   },
 

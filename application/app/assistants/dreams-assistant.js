@@ -221,9 +221,13 @@ DreamsAssistant.prototype = {
         break;
       case "sortasc":
         DreamsDB.retrieveLatest(this.updateDreams.bind(this), true);
+        DreamsDB.prefs.sort = true;
+        DreamsDB.savePrefs();
         break;
       case "sortdesc":
-        DreamsDB.retrieveLatest(this.updateDreams.bind(this));
+        DreamsDB.retrieveLatest(this.updateDreams.bind(this), false);
+        DreamsDB.prefs.sort = false;
+        DreamsDB.savePrefs();
         break;
       case "sendtxt":
         this.backupData(false);
