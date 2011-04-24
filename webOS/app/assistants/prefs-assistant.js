@@ -28,12 +28,6 @@ PrefsAssistant.prototype = {
       disabled: false
     },
 
-    passwordEmail: {
-      value: DreamsDB.prefs.email,
-      autoFocus: false,
-      disabled: !DreamsDB.prefs.passwordProtect 
-    },
-
     passwordField: {
       value: DreamsDB.prefs.password, 
       autoFocus: false, 
@@ -91,12 +85,6 @@ PrefsAssistant.prototype = {
       falseLabel: 'No'
     }, this.models.passwordProtect);
   
-    // TODO need an info button thingy that displays why I need email address
-    this.controller.setupWidget("passwordEmail", {
-      hintText: "Email Address",
-      textCase: Mojo.Widget.steModeLowerCase
-    }, this.models.passwordEmail);
-
     this.controller.setupWidget("passwordLock", { 
       hintText: "Type Password" 
     }, this.models.passwordField);
@@ -178,7 +166,7 @@ PrefsAssistant.prototype = {
   },
 
   showPasswordField: function (event) {
-    this.models.passwordField.value = "";
+    this.models.passwordField.value = event.value ? DreamsDB.prefs.password : "";
     this.models.passwordField.disabled = !event.value;
     this.controller.modelChanged(this.models.passwordField);
     DreamsDB.prefs.passwordProtect = event.value;

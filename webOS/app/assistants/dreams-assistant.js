@@ -143,7 +143,7 @@ DreamsAssistant.prototype = {
   },
 
   viewDream: function (event) {
-    Mojo.Controller.stageController.pushScene({ name: "dream" }, event.item);
+    Mojo.Controller.stageController.pushScene({ name: "dream" }, event.item, this.dreams);
   },
 
   addDream: function () {

@@ -1,6 +1,21 @@
 /*global Mojo DreamsDB Snake */
-function DreamAssistant(dream) { 
+function DreamAssistant(dream, dreams) { 
   this.dream = dream;
+  this.dreamsObj = dreams;
+  this.prevDream = false;
+  this.nextDream = false;
+
+  for (var i = 0, max = dreams.length; i < max; i = i + 1) {
+    if (dreams[i].id === dream.id) {
+      if (dreams[i - 1]) {
+        this.prevDream = dreams[i - 1];
+      }
+
+      if (dreams[i + 1]) {
+        this.nextDream = dreams[i + 1];
+      }
+    }
+  }
 }
 
 DreamAssistant.prototype = {
@@ -29,6 +44,9 @@ DreamAssistant.prototype = {
     this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, DreamsDB.appMenu);
     this.controller.setupWidget(Mojo.Menu.commandMenu, { menuClass: 'no-fade' }, this.models.cmdMenu);
 
+    this.flickHandler = this.handleFlick.bindAsEventListener(this);
+    Mojo.Event.listen(this.controller.window, Mojo.Event.flick, this.flickHandler, false);
+
     // default value
     this.dream.title = this.dream.title || "";
 
@@ -53,6 +71,10 @@ DreamAssistant.prototype = {
       // add to template
       that.controller.get('myTags').innerHTML = that.dream.tags.join(", ");
     });
+  },
+
+  cleanup: function (event) {
+    Mojo.Event.stopListening(this.controller.window, Mojo.Event.flick, this.flickHandler, false);
   },
 
   backupData: function (json_format) {
@@ -82,6 +104,15 @@ DreamAssistant.prototype = {
         }
       }
     });
+  },
+
+  handleFlick: function (event) {
+    Mojo.Log.error(JSON.stringify(event.velocity.x));
+    if (event.velocity.x >= 500 && this.nextDream) {
+      Mojo.Controller.stageController.swapScene({ name: "dream" }, this.prevDream, this.dreamsObj);
+    } else if(event.velocity.x <= -500 && this.prevDream)   {
+      Mojo.Controller.stageController.swapScene({ name: "dream" }, this.nextDream, this.dreamsObj);
+    }
   },
 
   handleCommand: function (event) {
