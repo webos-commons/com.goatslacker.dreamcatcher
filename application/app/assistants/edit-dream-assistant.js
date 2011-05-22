@@ -128,10 +128,15 @@ EditDreamAssistant.prototype = {
   },
 
   saveTag: function (event) {
-    var tag = event.value
-      , span = null;
+    var tag = event.value,
+        span = null;
 
-    // TODO do an in_array!
+    this.dream.tags.forEach(function (mytag) {
+      if (tag === mytag) {
+        tag = null;
+        return false;
+      }
+    });
 
     // if there's a tag to enter
     if (tag) {
@@ -143,13 +148,6 @@ EditDreamAssistant.prototype = {
 
       // reset the value of txtTags
       this.controller.get('txtTags').mojo.setValue("");
-
-      // FIXME this isn't setting the focus back to txtTags
-      //this.controller.get('txtTags').mojo.focus();
-
-      // This may not be needed here actually
-      //this.controller.sceneScroller.mojo.revealBottom();
-      //this.controller.sceneScroller.mojo.revealBottom();
 
     // no tag, we hide the tag add field
     } else {

@@ -98,7 +98,7 @@ Snake.loadFromJSON({
       for (i = 0; i < keywords.length; i = i + 1) {
         if (keywords[i] && keywords[i].length >= 3) {
           // remove special chars, stem and push into keys
-          var no_special_chars = keywords[i].replace(/[^a-zA-Z 0-9]+/g, ''), // FIXME regex
+          var no_special_chars = keywords[i].replace(/\W/g, ''),
               stemmed = stemmer(no_special_chars).toLowerCase();
 
           index[stemmed] = no_special_chars;
@@ -154,7 +154,7 @@ Snake.loadFromJSON({
             tag = new DreamTag();
             tag.dream_id = dream.id;
 
-            tag.tag = dream.tags[i].replace(/[^a-zA-Z 0-9]+/g, ''); // FIXME Regex
+            tag.tag = dream.tags[i].replace(/\W/g, '');
             tag.normalized = tag.tag.toLowerCase().split(" ").join("-");
             tag.save();
           }

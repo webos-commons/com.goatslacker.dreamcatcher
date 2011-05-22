@@ -189,12 +189,12 @@ var DreamsDB = {
     if (words.length > 1) {
 
       // we need to execute two queries, one for the entire term stemmed and replaced and then the loop of words
-      phrase = stemmer(search_term.toLowerCase().replace(/[^a-zA-Z 0-9]+/g, '')); // FIXME regex
+      phrase = stemmer(search_term.toLowerCase().replace(/\W/g, ''));
     }
 
     // single words
     for (i = 0; i < words.length; i = i + 1) {
-      stemmed_words.push(stemmer(words[i].toLowerCase().replace(/[^a-zA-Z 0-9]+/g, ''))); // FIXME regex -- geez I should make this a func
+      stemmed_words.push(stemmer(words[i].toLowerCase().replace(/\W/g, '')));
       q.push("?");
     }
 

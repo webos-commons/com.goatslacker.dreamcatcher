@@ -23,6 +23,12 @@ body {
   z-index: 2;
 }
 
+.fullscreen-message {
+  background: #cacaca;
+  line-height: 40px;
+  height: 20px;
+}
+
 .splash {
   background: url(../images/about.png) center bottom no-repeat;
   width: 100%;
@@ -69,6 +75,7 @@ body {
 }
 
 .not-opaque {
+  -webkit-border-radius: 14px;
   background-color: #d4d4d4;
 }
 
@@ -113,7 +120,7 @@ body {
 }
 
 .tag {
-  padding: 4px 8px;
+  padding: 4px 10px;
   margin: 5px;
   -webkit-border-radius: 20px;
   background: black; /* needs a nice background image for palm-dark & palm-light*/

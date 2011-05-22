@@ -49,7 +49,8 @@ task("install", [], function () {
 
   instructions = [
     "palm-package application",
-    "palm-install com.goatslacker.dreamcatcher_" + version + "_all.ipk"
+    "palm-install com.goatslacker.dreamcatcher_" + version + "_all.ipk",
+    "palm-launch com.goatslacker.dreamcatcher"
   ],
 
   go = build(instructions);

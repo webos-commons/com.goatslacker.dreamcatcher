@@ -86,7 +86,8 @@ PrefsAssistant.prototype = {
     }, this.models.passwordProtect);
   
     this.controller.setupWidget("passwordLock", { 
-      hintText: "Type Password" 
+      hintText: "Type Password",
+      textCase: Mojo.Widget.steModeLowerCase
     }, this.models.passwordField);
 
     // always on
