@@ -45,16 +45,34 @@ build = function (instructions) {
 /** Tasks */
 
 task("install", [], function () {
-  var version = arguments[0] ? arguments[0].version : 0,
+  var launch = arguments[0] ? (arguments[0].launch) : false;
 
-  instructions = [
-    "palm-package application",
-    "palm-install com.goatslacker.dreamcatcher_" + version + "_all.ipk",
-    "palm-launch com.goatslacker.dreamcatcher"
-  ],
+  // read version
+  fs.readFile('application/appinfo.json', 'utf8', function (err, data) {
+    if (err) {
+      throw err;
+    }
 
-  go = build(instructions);
+    var version = (function (appinfo) {
+      return appinfo.version;
+    }(JSON.parse(data))),
 
-  // run the listed commands
-  go();
+    instructions = [
+      "palm-package application",
+      "palm-install com.goatslacker.dreamcatcher_" + version + "_all.ipk"
+    ],
+
+    go = null;
+
+    if (launch) {
+      instructions.push("palm-launch com.goatslacker.dreamcatcher");
+    }
+
+    // build the instructions into an executable function
+    go = build(instructions);
+
+    // run the listed commands
+    go();
+  });
+
 }, false);
