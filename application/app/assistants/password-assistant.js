@@ -20,9 +20,9 @@ PasswordAssistant.prototype = {
   setup: function () {
     // Menu
     this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, {
-//      items: [
-//        { label: "Forgot Password", command: "support" }
-//      ]
+      items: [
+        { label: "Forgot Password", command: "forgot" }
+      ]
     });
 
     // widgets
@@ -57,16 +57,20 @@ PasswordAssistant.prototype = {
       this.controller.get('error_message').innerHTML = "Incorrect Password, Try Again";
       this.models.passwordField.value = "";
       this.controller.modelChanged(this.models.passwordField);
-      // this.controller.get('passwordField').mojo.focus();
     }
   },
 
-/*
   resetPassword: function () {
+    Mojo.Controller.errorDialog("Password was reset");
+    DreamsDB.prefs.password = "dream";
   },
-*/
 
   handleCommand: function (event) {
+    if (event.type === Mojo.Event.command) {
+      if (event.command === "forgot") {
+        this.resetPassword();
+      }
+    }
   }
 
 };
