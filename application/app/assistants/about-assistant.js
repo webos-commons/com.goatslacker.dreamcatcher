@@ -1,10 +1,13 @@
 /*global Mojo DreamsDB */
-function HelpAssistant() { }
+function AboutAssistant() { }
 
-HelpAssistant.prototype = {
+AboutAssistant.prototype = {
   setup: function () {
     // force orientation
     this.controller.stageController.setWindowOrientation("up");
+
+    // app version
+    this.controller.get('appVersion').innerHTML = "Version " + Mojo.appInfo.version;
   },
 
   deactivate: function (event) {

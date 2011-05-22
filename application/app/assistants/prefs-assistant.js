@@ -226,7 +226,8 @@ PrefsAssistant.prototype = {
       onChoose: function (value) {
         if (value === true) {
           Snake.venom.dreams.doDelete(function () {
-            // TODO recursively delete tags and search as well
+            Snake.venom.dreams_tags.doDelete();
+            Snake.venom.dreams_search.doDelete();
             Mojo.Controller.errorDialog("Data has been deleted");
           });
         }

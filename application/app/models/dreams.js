@@ -31,21 +31,10 @@ var DreamsDB = {
     visible: true,
     items: [
       Mojo.Menu.editItem,
-      { label: "About", command: 'help' },
+      { label: "About", command: 'about' },
+      { label: "Help", command: 'help' },
       { label: "Preferences", command: 'prefs' }
     ]
-  },
-
-  handleCommand: function (event) {
-/*
-    if (event.type === Mojo.Event.command) {
-      switch(event.command) {
-      case "help":
-        // push help scene
-        break;
-      }
-    }
-*/
   },
 
 /* Database */

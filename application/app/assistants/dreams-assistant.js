@@ -175,42 +175,48 @@ DreamsAssistant.prototype = {
   backupData: function (json_format) {
     json_format = json_format || false;
 
-    var tmp = []
-      , i = 0
-      , dreams = "";
+    var self = this,
+    
+    backup = function (mydreams) {
 
-    if (json_format) {
-      for (i = 0; i < DreamsDB.dreams.length; i = i + 1) {
-        json_format = {};
+      var tmp = [],
+          dreams = "";
 
-        json_format.title = DreamsDB.dreams[i].title;
-        json_format.summary = DreamsDB.dreams[i].dream.replace(/<br>/gi, "");
-        json_format.dream_date = DreamsDB.dreams[i].date_format;
-        json_format.created_at = DreamsDB.dreams[i].timestamp;
+      if (json_format) {
 
-        tmp.push(json_format);
+        mydreams.forEach(function (mydream) {
+          tmp.push({
+            title: mydream.title,
+            summary: mydream.summary,
+            dream_date: mydream.dream_date,
+            created_at: mydream.created_at
+          });
+        });
+
+        dreams = JSON.stringify({ "dreams": tmp });
+
+      } else {
+
+        mydreams.forEach(function (mydream) {
+          tmp.push(mydream.dream_date + "<br />-----<br />" + mydream.summary);
+        });
+
+        dreams = tmp.join("<br /><br />");
       }
 
-      dreams = JSON.stringify({ "dreams": tmp });
-    } else {
-
-      for (i = 0; i < DreamsDB.dreams.length; i = i + 1) {
-        tmp.push(DreamsDB.dreams[i].dream_date + "<br />----<br />" + DreamsDB.dreams[i].summary);
-      }
-
-      dreams = tmp.join("<br /><br />");
-    }
-
-    this.controller.serviceRequest("palm://com.palm.applicationManager", {
-      method: "open",
-      parameters: { 
-        id: "com.palm.app.email",
-        params: {
-          summary: "Dreamcatcher Backup",
-          text: dreams
+      self.controller.serviceRequest("palm://com.palm.applicationManager", {
+        method: "open",
+        parameters: { 
+          id: "com.palm.app.email",
+          params: {
+            summary: "Dreamcatcher Backup",
+            text: dreams
+          }
         }
-      }
-    });
+      });
+    };
+
+    DreamsDB.retrieveLatest(backup, true);
   },
 
   handleCommand: function (event) {

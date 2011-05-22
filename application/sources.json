@@ -8,6 +8,7 @@
   { "source": "app/models/stemmer.js" },
   { "scenes": "splash", "source": "app/assistants/splash-assistant.js" },
   { "scenes": "help", "source": "app/assistants/help-assistant.js" },
+  { "scenes": "about", "source": "app/assistants/about-assistant.js" },
   { "scenes": "prefs", "source": "app/assistants/prefs-assistant.js" },
   { "scenes": "password", "source": "app/assistants/password-assistant.js" },
   { "scenes": "dreams", "source": "app/assistants/dreams-assistant.js" },
