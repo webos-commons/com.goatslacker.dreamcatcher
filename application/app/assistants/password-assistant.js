@@ -20,9 +20,9 @@ PasswordAssistant.prototype = {
   setup: function () {
     // Menu
     this.controller.setupWidget(Mojo.Menu.appMenu, { omitDefaultItems: true }, {
-      items: [
-        { label: "Forgot Password", command: "support" }
-      ]
+//      items: [
+//        { label: "Forgot Password", command: "support" }
+//      ]
     });
 
     // widgets
@@ -61,52 +61,12 @@ PasswordAssistant.prototype = {
     }
   },
 
-  resetPassword: function () {
-    // TODO FIX: password reset and password saving is kinda funky.
-    // need to re-think of a way of auhenticating. people sometimes forget their passwords
-    // and a password reset system is difficult to implement since you never know who you're giving the resetted password to
-    var key = 'dr34m';
 /*
-    var i = 0
-      , key = "";
-
-    if (DreamsDB.prefs.email) {
-      for (i = 0; i < 8; i = i + 1) {
-        key = key + String.fromCharCode(Math.ceil((Math.random() * 74) + 48));
-      }
-    } else {
-      key = "dr34m";
-    }
-*/
-    DreamsDB.prefs.password = key;
+  resetPassword: function () {
   },
+*/
 
   handleCommand: function (event) {
-    if (event.type === Mojo.Event.command) {
-      switch (event.command) {
-      case "support":
-        this.resetPassword();
-
-        var contact = { };
-        //contact.value = DreamsDB.prefs.email || 'josh@goatslacker.com';
-        contact.value = 'josh@goatslacker.com';
-        contact.type = 'email';
-        contact.role = 1;
-
-        this.controller.serviceRequest("palm://com.palm.applicationManager", {
-          method: "open",
-          parameters: { 
-            id: "com.palm.app.email",
-            params: {
-              recipients: [contact],
-              summary: "Dreamcatcher: Help, I forgot my password"
-            }
-          }
-        });
-
-        break;
-      }
-    }
   }
 
 };
