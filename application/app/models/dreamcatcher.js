@@ -1,3 +1,4 @@
+/*global Snake Dream stemmer DreamSearch DreamTag */
 // define the db properties
 Snake.config.database = { name: "ext:dreamcatcher", size: 65000, description: "Dreamcatcher Database", version: "0.1" };
 
@@ -8,7 +9,7 @@ Snake.loadFromJSON({
       "title": { "type": "text" },
       "summary": { "type": "text" },
       "dream_date": { "type": "text" }
-     }
+    }
   },
 
   DreamSearch: {
@@ -60,6 +61,8 @@ Snake.loadFromJSON({
           'let', ''
         ],
           no_push = false,
+          no_special_chars = "",
+          stemmed = "",
           keys = [],
           keyword = null,
           index = {},
@@ -77,7 +80,7 @@ Snake.loadFromJSON({
       // and remove all special chars, stem the words
 
       for (i = 0; i < summary.length; i = i + 1) {
-        keyword = summary[i].replace(/[^a-zA-Z 0-9]+/g,'');
+        keyword = summary[i].replace(/\W/g, '');
 
         for (j = 0; j < stop.length; j = j + 1) {
           if (stop[j] === keyword.toLowerCase()) {
@@ -98,8 +101,8 @@ Snake.loadFromJSON({
       for (i = 0; i < keywords.length; i = i + 1) {
         if (keywords[i] && keywords[i].length >= 3) {
           // remove special chars, stem and push into keys
-          var no_special_chars = keywords[i].replace(/\W/g, ''),
-              stemmed = stemmer(no_special_chars).toLowerCase();
+          no_special_chars = keywords[i].replace(/\W/g, '');
+          stemmed = stemmer(no_special_chars).toLowerCase();
 
           index[stemmed] = no_special_chars;
           keys.push(stemmed);
@@ -114,23 +117,21 @@ Snake.loadFromJSON({
 
       for (i = 0; i < keys.length; i = i + 1) {
         if (i > 0 && keys[i] === keys[i - 1]) {
-          keywords[keys[i]]++;
+          keywords[keys[i]] += 1;
         } else {
           keywords[keys[i]] = 1;
         }
       }
 
       // add to database!
-      for (i in keywords) {
-        if (keywords.hasOwnProperty(i)) {
-          var ds = new DreamSearch();
-          ds.dream_id = this.id;
-          ds.word = index[i]; 
-          ds.stem = i;
-          ds.weight = keywords[i];
-          ds.save();
-        }
-      }
+      Object.keys(keywords).forEach(function (i) {
+        var ds = new DreamSearch();
+        ds.dream_id = this.id;
+        ds.word = index[i]; 
+        ds.stem = i;
+        ds.weight = keywords[i];
+        ds.save();
+      });
     },
 
     save: function (onSuccess, onFailure, output_sql) {

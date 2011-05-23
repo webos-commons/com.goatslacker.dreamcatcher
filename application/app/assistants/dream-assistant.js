@@ -110,7 +110,7 @@ DreamAssistant.prototype = {
     Mojo.Log.error(JSON.stringify(event.velocity.x));
     if (event.velocity.x >= 500 && this.nextDream) {
       Mojo.Controller.stageController.swapScene({ name: "dream" }, this.prevDream, this.dreamsObj);
-    } else if(event.velocity.x <= -500 && this.prevDream)   {
+    } else if (event.velocity.x <= -500 && this.prevDream)   {
       Mojo.Controller.stageController.swapScene({ name: "dream" }, this.nextDream, this.dreamsObj);
     }
   },
