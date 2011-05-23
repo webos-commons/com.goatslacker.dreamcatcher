@@ -41,7 +41,8 @@ Snake.loadFromJSON({
       this.summary = this.summary || "";
 
       // get keywords and push them into an array repeated by weight...
-      var summary = this.summary.split(" "),
+      var self = this,
+          summary = this.summary.split(" "),
           title = this.title.split(" "),
           tags = this.tags,
           keywords = [],
@@ -126,7 +127,7 @@ Snake.loadFromJSON({
       // add to database!
       Object.keys(keywords).forEach(function (i) {
         var ds = new DreamSearch();
-        ds.dream_id = this.id;
+        ds.dream_id = self.id;
         ds.word = index[i]; 
         ds.stem = i;
         ds.weight = keywords[i];
